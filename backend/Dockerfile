@@ -1,9 +1,12 @@
 FROM python:3.10
 
-WORKDIR /app
+WORKDIR /app/backend
 
-COPY . .
+COPY backend/requirements.txt .
 
 RUN pip install -r requirements.txt
+
+COPY backend/ .
+COPY frontend/ /app/frontend/
 
 CMD ["python", "app.py"]

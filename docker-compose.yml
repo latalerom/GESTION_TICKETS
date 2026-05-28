@@ -9,13 +9,39 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: backend_app
     restart: always
+    environment:
+      APP_URL: http://localhost:5001
+      MAIL_SERVER: "smtp.gmail.com"
+      MAIL_PORT: 587
+      MAIL_USERNAME: "latalerom@unincca.edu.co"
+      MAIL_PASSWORD: "zczbfcmpbjphpsrg"
+      MAIL_USE_TLS: "true"
+      MAIL_SENDER: "latalerom@unincca.edu.co"
     ports:
       - "5001:5000"
     depends_on:
       - mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin_app
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:

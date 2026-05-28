@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <main class="center-layout">
+        <section class="panel auth-panel">
+            <h1>Completar registro</h1>
+            <p id="register-summary" class="muted">Validando invitacion...</p>
+
+            <div id="register-message" class="message hidden"></div>
+
+            <form id="register-form" class="hidden">
+                <label for="nombre">Nombre</label>
+                <input id="nombre" name="nombre" type="text" autocomplete="name" required>
+
+                <label for="password">Contrasena</label>
+                <input id="password" name="password" type="password" autocomplete="new-password" required>
+
+                <button class="button primary full" type="submit">Crear cuenta</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

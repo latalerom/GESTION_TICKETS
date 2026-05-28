@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1 id="page-title">Panel de Tickets</h1>
+            <p id="user-info" class="muted">Cargando sesion...</p>
+        </div>
+        <button id="logout-button" class="button secondary" type="button">Cerrar sesion</button>
+    </header>
+
+    <main class="page-grid">
+        <section class="panel">
+            <h2 id="form-title">Crear ticket</h2>
+            <div id="ticket-message" class="message hidden"></div>
+
+            <form id="ticket-form">
+                <input type="hidden" id="ticket-id">
+
+                <label for="titulo">Titulo</label>
+                <input id="titulo" name="titulo" type="text" required>
+
+                <label for="descripcion">Descripcion</label>
+                <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+
+                <div class="actions">
+                    <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
+                    <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
+                </div>
+            </form>
+
+            <div id="invite-panel" class="invite-panel hidden">
+                <h3>Invitar usuario</h3>
+                <div id="invite-message" class="message hidden"></div>
+                <form id="invite-form">
+                    <label for="invite-email">Correo</label>
+                    <input id="invite-email" name="email" type="email" required>
+
+                    <label for="invite-role">Rol</label>
+                    <select id="invite-role" name="rol">
+                        <option value="cliente">Cliente</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+
+                    <button class="button primary full" type="submit">Enviar invitacion</button>
+                </form>
+                <p id="invite-link" class="invite-link muted"></p>
+            </div>
+
+            <div class="activity-panel">
+                <h3>Actividad en vivo</h3>
+                <ul id="activity-list" class="activity-list">
+                    <li>No hay actividad reciente.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="panel table-panel">
+            <div class="section-title">
+                <div>
+                    <h2 id="tickets-title">Tickets</h2>
+                    <p id="role-summary" class="muted">Cargando informacion...</p>
+                </div>
+                <div class="toolbar-actions">
+                    <span id="realtime-status" class="realtime-status offline">Tiempo real desconectado</span>
+                    <button id="reload-button" class="button secondary" type="button">Actualizar</button>
+                </div>
+            </div>
+
+            <div id="stats-row" class="stats-row"></div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead id="tickets-head"></thead>
+                    <tbody id="tickets-body">
+                        <tr>
+                            <td colspan="5">Cargando tickets...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
