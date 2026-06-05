@@ -7,6 +7,7 @@ from controllers.auth_controller import auth_bp
 from controllers.ticket_controller import ticket_bp
 from models import db
 from services.database_seeder import DatabaseSeeder
+from services.schema_service import SchemaService
 from swagger.swagger_config import SwaggerConfig
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
@@ -46,6 +47,7 @@ class ApplicationFactory:
     def initialize_database(self, app):
         with app.app_context():
             db.create_all()
+            SchemaService().sync()
             DatabaseSeeder().seed()
 
 

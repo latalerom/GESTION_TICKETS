@@ -6,37 +6,143 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <header class="topbar">
-        <div>
-            <h1 id="page-title">Panel de Tickets</h1>
-            <p id="user-info" class="muted">Cargando sesion...</p>
+<body class="app-body">
+    <aside class="sidebar">
+        <div class="brand-block">
+            <span class="brand-mark">ST</span>
+            <div>
+                <strong>Sistema Tickets</strong>
+                <small id="sidebar-role">Cargando...</small>
+            </div>
         </div>
-        <button id="logout-button" class="button secondary" type="button">Cerrar sesion</button>
-    </header>
 
-    <main class="page-grid">
-        <section class="panel">
-            <h2 id="form-title">Crear ticket</h2>
-            <div id="ticket-message" class="message hidden"></div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" type="button" data-view="tickets">Tickets</button>
+            <button class="nav-item" type="button" data-view="create">Crear caso</button>
+            <button class="nav-item admin-only hidden" type="button" data-view="reports">Reportes</button>
+            <button class="nav-item admin-only hidden" type="button" data-view="users">Usuarios</button>
+            <button class="nav-item" type="button" data-view="profile">Perfil</button>
+        </nav>
 
-            <form id="ticket-form">
-                <input type="hidden" id="ticket-id">
+        <div class="sidebar-footer">
+            <span id="realtime-status" class="realtime-status offline">Tiempo real desconectado</span>
+            <button id="logout-button" class="button secondary full" type="button">Cerrar sesion</button>
+        </div>
+    </aside>
 
-                <label for="titulo">Titulo</label>
-                <input id="titulo" name="titulo" type="text" required>
+    <main class="workspace">
+        <header class="workspace-header">
+            <div>
+                <p class="eyebrow">Mesa de ayuda</p>
+                <h1 id="page-title">Panel de Tickets</h1>
+                <p id="user-info" class="muted">Cargando sesion...</p>
+            </div>
+            <button id="reload-button" class="button secondary" type="button">Actualizar</button>
+        </header>
 
-                <label for="descripcion">Descripcion</label>
-                <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+        <section id="view-tickets" class="module-view active">
+            <div id="stats-row" class="stats-row"></div>
 
-                <div class="actions">
-                    <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
-                    <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
+            <div class="panel table-panel">
+                <div class="section-title">
+                    <div>
+                        <h2 id="tickets-title">Tickets</h2>
+                        <p id="role-summary" class="muted">Cargando informacion...</p>
+                    </div>
                 </div>
-            </form>
 
-            <div id="invite-panel" class="invite-panel hidden">
-                <h3>Invitar usuario</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead id="tickets-head"></thead>
+                        <tbody id="tickets-body">
+                            <tr>
+                                <td colspan="8">Cargando tickets...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-create" class="module-view">
+            <div class="split-layout">
+                <section class="panel">
+                    <h2 id="form-title">Crear ticket</h2>
+                    <p class="muted">Selecciona el departamento y completa la informacion del caso.</p>
+                    <div id="ticket-message" class="message hidden"></div>
+
+                    <form id="ticket-form">
+                        <input type="hidden" id="ticket-id">
+                        <input type="hidden" id="departamento">
+                        <input type="hidden" id="area">
+                        <input type="hidden" id="tipo-ticket">
+
+                        <label>Departamento, area y tipo</label>
+                        <div id="department-tree" class="department-tree"></div>
+                        <p id="selected-ticket-path" class="selected-path">Sin seleccion</p>
+
+                        <label for="titulo">Numero o titulo del caso</label>
+                        <input id="titulo" name="titulo" type="text" required>
+
+                        <label for="reportado-por">Quien hace el reporte</label>
+                        <input id="reportado-por" name="reportado_por" type="text" required>
+
+                        <label for="descripcion">Descripcion</label>
+                        <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+
+                        <label for="observacion">Observacion</label>
+                        <textarea id="observacion" name="observacion" rows="3"></textarea>
+
+                        <div class="actions">
+                            <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
+                            <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
+                        </div>
+                    </form>
+                </section>
+
+                <aside class="panel activity-card">
+                    <h3>Actividad en vivo</h3>
+                    <ul id="activity-list" class="activity-list">
+                        <li>No hay actividad reciente.</li>
+                    </ul>
+                </aside>
+            </div>
+        </section>
+
+        <section id="view-reports" class="module-view admin-only hidden">
+            <div class="panel table-panel">
+                <div class="section-title">
+                    <div>
+                        <h2>Reportes generales</h2>
+                        <p class="muted">Gestion de casos, prioridad y estado para administradores.</p>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Numero de caso</th>
+                                <th>Tipo de incidente</th>
+                                <th>Observacion</th>
+                                <th>Quien lo realizo</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-body">
+                            <tr>
+                                <td colspan="6">Cargando reportes...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-users" class="module-view admin-only hidden">
+            <div class="panel invite-panel">
+                <h2>Invitar usuario</h2>
+                <p class="muted">El usuario recibira un enlace para completar su registro.</p>
                 <div id="invite-message" class="message hidden"></div>
                 <form id="invite-form">
                     <label for="invite-email">Correo</label>
@@ -52,38 +158,19 @@
                 </form>
                 <p id="invite-link" class="invite-link muted"></p>
             </div>
-
-            <div class="activity-panel">
-                <h3>Actividad en vivo</h3>
-                <ul id="activity-list" class="activity-list">
-                    <li>No hay actividad reciente.</li>
-                </ul>
-            </div>
         </section>
 
-        <section class="panel table-panel">
-            <div class="section-title">
-                <div>
-                    <h2 id="tickets-title">Tickets</h2>
-                    <p id="role-summary" class="muted">Cargando informacion...</p>
+        <section id="view-profile" class="module-view">
+            <div class="panel profile-panel">
+                <h2>Perfil de usuario</h2>
+                <div class="profile-card">
+                    <div class="profile-avatar" id="profile-avatar">U</div>
+                    <div>
+                        <h3 id="profile-name">Usuario</h3>
+                        <p id="profile-email" class="muted">correo</p>
+                        <span id="profile-role" class="badge pendiente">rol</span>
+                    </div>
                 </div>
-                <div class="toolbar-actions">
-                    <span id="realtime-status" class="realtime-status offline">Tiempo real desconectado</span>
-                    <button id="reload-button" class="button secondary" type="button">Actualizar</button>
-                </div>
-            </div>
-
-            <div id="stats-row" class="stats-row"></div>
-
-            <div class="table-wrap">
-                <table>
-                    <thead id="tickets-head"></thead>
-                    <tbody id="tickets-body">
-                        <tr>
-                            <td colspan="5">Cargando tickets...</td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </section>
     </main>

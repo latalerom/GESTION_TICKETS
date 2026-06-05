@@ -166,6 +166,11 @@ class TicketController:
                 user=user,
                 titulo=data.get("titulo"),
                 descripcion=data.get("descripcion"),
+                tipo_ticket=data.get("tipo_ticket"),
+                reportado_por=data.get("reportado_por"),
+                area=data.get("area"),
+                departamento=data.get("departamento"),
+                observacion=data.get("observacion"),
             )
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
@@ -229,6 +234,12 @@ class TicketController:
                 titulo=data.get("titulo"),
                 descripcion=data.get("descripcion"),
                 estado=data.get("estado"),
+                prioridad=data.get("prioridad"),
+                observacion=data.get("observacion"),
+                tipo_ticket=data.get("tipo_ticket"),
+                reportado_por=data.get("reportado_por"),
+                area=data.get("area"),
+                departamento=data.get("departamento"),
             )
         except PermissionError as exc:
             return jsonify({"error": str(exc)}), 403

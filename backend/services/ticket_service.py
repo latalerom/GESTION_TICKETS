@@ -4,6 +4,7 @@ from services.ticket_event_broker import ticket_event_broker
 
 class TicketService:
     VALID_ESTADOS = {"pendiente", "proceso", "resuelto"}
+    VALID_PRIORIDADES = {"baja", "media", "alta", "critica"}
 
     def list_for_user(self, user):
         query = Ticket.query
@@ -21,13 +22,28 @@ class TicketService:
 
         return ticket
 
-    def create(self, user, titulo, descripcion):
-        if not titulo or not descripcion:
-            raise ValueError("Titulo y descripcion son obligatorios")
+    def create(
+        self,
+        user,
+        titulo,
+        descripcion,
+        tipo_ticket=None,
+        reportado_por=None,
+        area=None,
+        departamento=None,
+        observacion=None,
+    ):
+        if not titulo or not descripcion or not tipo_ticket or not area or not departamento:
+            raise ValueError("Titulo, descripcion, tipo, area y departamento son obligatorios")
 
         ticket = Ticket(
             titulo=titulo,
             descripcion=descripcion,
+            tipo_ticket=tipo_ticket,
+            observacion=observacion,
+            reportado_por=reportado_por or user.nombre,
+            area=area,
+            departamento=departamento,
             usuario_id=user.id,
         )
 
@@ -44,13 +60,41 @@ class TicketService:
 
         return ticket
 
-    def update(self, ticket, user, titulo=None, descripcion=None, estado=None):
+    def update(
+        self,
+        ticket,
+        user,
+        titulo=None,
+        descripcion=None,
+        estado=None,
+        prioridad=None,
+        observacion=None,
+        tipo_ticket=None,
+        reportado_por=None,
+        area=None,
+        departamento=None,
+    ):
         previous_estado = ticket.estado
         if titulo is not None:
             ticket.titulo = titulo
 
         if descripcion is not None:
             ticket.descripcion = descripcion
+
+        if observacion is not None:
+            ticket.observacion = observacion
+
+        if tipo_ticket is not None:
+            ticket.tipo_ticket = tipo_ticket
+
+        if reportado_por is not None:
+            ticket.reportado_por = reportado_por
+
+        if area is not None:
+            ticket.area = area
+
+        if departamento is not None:
+            ticket.departamento = departamento
 
         if estado is not None:
             if not user.is_admin():
@@ -60,6 +104,15 @@ class TicketService:
                 raise ValueError("Estado invalido")
 
             ticket.estado = estado
+
+        if prioridad is not None:
+            if not user.is_admin():
+                raise PermissionError("Solo un administrador puede definir la prioridad")
+
+            if prioridad not in self.VALID_PRIORIDADES:
+                raise ValueError("Prioridad invalida")
+
+            ticket.prioridad = prioridad
 
         db.session.commit()
         action = "ticket_status_changed" if estado is not None and estado != previous_estado else "ticket_updated"

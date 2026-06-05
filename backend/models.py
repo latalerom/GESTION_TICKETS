@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
@@ -26,18 +27,32 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(200))
     descripcion = db.Column(db.Text)
+    tipo_ticket = db.Column(db.String(100), default="General")
+    observacion = db.Column(db.Text)
+    reportado_por = db.Column(db.String(100))
+    area = db.Column(db.String(100))
+    departamento = db.Column(db.String(100))
+    prioridad = db.Column(db.String(50), default="media")
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
     usuario = db.relationship("Usuario")
     estado = db.Column(db.String(50), default="pendiente")
+    creado_en = db.Column(db.DateTime, nullable=False, server_default=func.now())
 
     def to_dict(self):
         return {
             "id": self.id,
             "titulo": self.titulo,
             "descripcion": self.descripcion,
+            "tipo_ticket": self.tipo_ticket,
+            "observacion": self.observacion,
+            "reportado_por": self.reportado_por,
+            "area": self.area,
+            "departamento": self.departamento,
+            "prioridad": self.prioridad,
             "estado": self.estado,
             "usuario_id": self.usuario_id,
             "usuario": self.usuario.nombre if self.usuario else None,
+            "creado_en": self.creado_en.isoformat() if self.creado_en else None,
         }
 
     def belongs_to(self, user):

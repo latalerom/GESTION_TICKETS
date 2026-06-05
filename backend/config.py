@@ -1,7 +1,15 @@
 import os
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@mysql_db:3306/soporte_db"
+    DB_USER = os.environ.get("DB_USER", "root")
+    DB_PASSWORD = os.environ.get("DB_PASSWORD", "root")
+    DB_HOST = os.environ.get("DB_HOST", "mysql_db")
+    DB_PORT = os.environ.get("DB_PORT", "3306")
+    DB_NAME = os.environ.get("DB_NAME", "soporte_db")
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "SQLALCHEMY_DATABASE_URI",
+        f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get("SECRET_KEY", "secret123")
     APP_URL = os.environ.get("APP_URL", "http://localhost:5001")
