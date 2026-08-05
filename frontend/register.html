@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
+    <link rel="icon" type="image/png" href="image/favicon_logo.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -12,14 +13,26 @@
             <h1>Completar registro</h1>
             <p id="register-summary" class="muted">Validando invitacion...</p>
 
-            <div id="register-message" class="message hidden"></div>
-
             <form id="register-form" class="hidden">
                 <label for="nombre">Nombre</label>
                 <input id="nombre" name="nombre" type="text" autocomplete="name" required>
 
+                <label for="telefono">Telefono</label>
+                <input id="telefono" name="telefono" type="tel" autocomplete="tel" required>
+
+                <label for="cargo">Cargo o area</label>
+                <input id="cargo" name="cargo" type="text" required>
+
+                <label for="bio">Informacion adicional</label>
+                <textarea id="bio" name="bio" rows="3" placeholder="Ejemplo: area, sede o datos utiles para soporte"></textarea>
+
                 <label for="password">Contrasena</label>
-                <input id="password" name="password" type="password" autocomplete="new-password" required>
+                <div class="password-field">
+                    <input id="password" name="password" type="password" autocomplete="new-password" required>
+                    <button class="password-toggle" type="button" data-password-toggle="#password" aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+                        <span class="password-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
 
                 <button class="button primary full" type="submit">Crear cuenta</button>
             </form>
@@ -27,6 +40,7 @@
     </main>
 
     <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/register.js"></script>
 </body>
 </html>

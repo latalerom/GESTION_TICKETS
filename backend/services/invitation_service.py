@@ -15,7 +15,7 @@ class InvitationService:
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
 
-    def create_invitation(self, email, rol, invited_by):
+    def create_invitation(self, email, rol, invited_by, created_ip=None):
         if not invited_by.is_admin():
             raise PermissionError("Solo un administrador puede invitar usuarios")
 
@@ -34,8 +34,10 @@ class InvitationService:
             email=email,
             rol=rol,
             token=token_urlsafe(32),
+            invitado_por_id=invited_by.id,
             creada_en=now,
             expira_en=now + timedelta(hours=24),
+            creada_ip=created_ip,
         )
 
         db.session.add(invitation)
@@ -43,6 +45,7 @@ class InvitationService:
 
         link = f"{current_app.config['APP_URL']}/register.html?token={invitation.token}"
         sent = self.mail_service.send_invitation(email, link)
+        email_error = self.mail_service.last_error
 
         payload = {
             "action": "user_invited",
@@ -53,7 +56,7 @@ class InvitationService:
         }
         ticket_event_broker.publish("activity", payload)
 
-        return invitation, link, sent
+        return invitation, link, sent, email_error
 
     def get_invitation(self, token):
         invitation = InvitacionUsuario.query.filter_by(token=token).first()
@@ -63,7 +66,7 @@ class InvitationService:
 
         return invitation
 
-    def register_user(self, token, nombre, password):
+    def register_user(self, token, nombre, password, telefono=None, cargo=None, bio=None):
         invitation = self.get_invitation(token)
 
         if invitation is None:
@@ -81,6 +84,9 @@ class InvitationService:
             email=invitation.email,
             password=generate_password_hash(password),
             rol=invitation.rol,
+            telefono=telefono,
+            cargo=cargo,
+            bio=bio,
         )
 
         invitation.usada = True

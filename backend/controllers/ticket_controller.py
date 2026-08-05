@@ -16,6 +16,7 @@ class TicketController:
         self.blueprint.add_url_rule("/tickets", view_func=self.list_tickets, methods=["GET"])
         self.blueprint.add_url_rule("/tickets/stream", view_func=self.stream_tickets, methods=["GET"])
         self.blueprint.add_url_rule("/tickets/<int:id>", view_func=self.get_ticket, methods=["GET"])
+        self.blueprint.add_url_rule("/tickets/<int:id>/history", view_func=self.get_ticket_history, methods=["GET"])
         self.blueprint.add_url_rule("/tickets", view_func=self.create_ticket, methods=["POST"])
         self.blueprint.add_url_rule("/tickets/<int:id>", view_func=self.update_ticket, methods=["PUT"])
         self.blueprint.add_url_rule("/tickets/<int:id>", view_func=self.delete_ticket, methods=["DELETE"])
@@ -126,6 +127,47 @@ class TicketController:
             return self.forbidden()
 
         return jsonify(ticket.to_dict())
+
+    def get_ticket_history(self, id):
+        """
+        Consultar historial de ticket
+        ---
+        tags:
+          - Tickets
+        parameters:
+          - in: path
+            name: id
+            type: integer
+            required: true
+            description: ID del ticket.
+        responses:
+          200:
+            description: Historial de cambios del ticket.
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/TicketHistory'
+          401:
+            description: El usuario no ha iniciado sesion.
+            schema:
+              $ref: '#/definitions/Error'
+          403:
+            description: El usuario no tiene permisos sobre este ticket.
+            schema:
+              $ref: '#/definitions/Error'
+          404:
+            description: Ticket no encontrado.
+        """
+        user, error = self.require_user()
+        if error is not None:
+            return error
+
+        history = self.ticket_service.list_history_for_user(id, user)
+
+        if history is None:
+            return self.forbidden()
+
+        return jsonify([item.to_dict() for item in history])
 
     def create_ticket(self):
         """
@@ -240,6 +282,8 @@ class TicketController:
                 reportado_por=data.get("reportado_por"),
                 area=data.get("area"),
                 departamento=data.get("departamento"),
+                asignado_a_id=data.get("asignado_a_id"),
+                solucion_cierre=data.get("solucion_cierre"),
             )
         except PermissionError as exc:
             return jsonify({"error": str(exc)}), 403
@@ -289,7 +333,11 @@ class TicketController:
         if ticket is None:
             return self.forbidden()
 
-        self.ticket_service.delete(ticket)
+        try:
+            self.ticket_service.delete(ticket, user=user)
+        except PermissionError as exc:
+            return jsonify({"error": str(exc)}), 403
+
         return jsonify({"message": "Ticket eliminado"})
 
 

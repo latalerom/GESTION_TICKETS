@@ -1,9 +1,7 @@
 const form = document.querySelector("#login-form");
-const message = document.querySelector("#login-message");
 
 function showMessage(text, type = "error") {
-    message.textContent = text;
-    message.className = `message ${type}`;
+    ui.toast(text, type);
 }
 
 form.addEventListener("submit", async (event) => {

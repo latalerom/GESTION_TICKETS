@@ -48,10 +48,27 @@ const api = {
         return this.request(`/invitations/${token}`);
     },
 
-    register(token, nombre, password) {
+    register(token, nombre, password, profile = {}) {
         return this.request("/register", {
             method: "POST",
-            body: JSON.stringify({ token, nombre, password }),
+            body: JSON.stringify({ token, nombre, password, ...profile }),
+        });
+    },
+
+    updateProfile(profile) {
+        return this.request("/profile", {
+            method: "PUT",
+            body: JSON.stringify(profile),
+        });
+    },
+
+    listUsers() {
+        return this.request("/users");
+    },
+
+    resetUserPassword(id) {
+        return this.request(`/users/${id}/reset-password`, {
+            method: "POST",
         });
     },
 

@@ -18,4 +18,6 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
+    MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "false").lower() == "true"
+    MAIL_TIMEOUT = int(os.environ.get("MAIL_TIMEOUT", "20"))
     MAIL_SENDER = os.environ.get("MAIL_SENDER", MAIL_USERNAME or "no-reply@soporte.local")

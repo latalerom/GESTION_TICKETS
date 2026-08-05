@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request, session
 from services.auth_service import AuthService
 from services.invitation_service import InvitationService
 from services.ticket_event_broker import ticket_event_broker
+from models import db
 
 
 class AuthController:
@@ -16,6 +17,9 @@ class AuthController:
         self.blueprint.add_url_rule("/login", view_func=self.login, methods=["POST"])
         self.blueprint.add_url_rule("/session", view_func=self.session_status, methods=["GET"])
         self.blueprint.add_url_rule("/logout", view_func=self.logout, methods=["POST"])
+        self.blueprint.add_url_rule("/profile", view_func=self.update_profile, methods=["PUT"])
+        self.blueprint.add_url_rule("/users", view_func=self.list_users, methods=["GET"])
+        self.blueprint.add_url_rule("/users/<int:user_id>/reset-password", view_func=self.reset_user_password, methods=["POST"])
         self.blueprint.add_url_rule("/invitations", view_func=self.create_invitation, methods=["POST"])
         self.blueprint.add_url_rule("/invitations/<token>", view_func=self.get_invitation, methods=["GET"])
         self.blueprint.add_url_rule("/register", view_func=self.register_user, methods=["POST"])
@@ -27,6 +31,14 @@ class AuthController:
             session.clear()
 
         return user
+
+    def user_summary(self, user, include_photo=False):
+        data = user.to_dict()
+
+        if not include_photo:
+            data.pop("foto_perfil", None)
+
+        return data
 
     def login(self):
         """
@@ -152,6 +164,72 @@ class AuthController:
         session.clear()
         return jsonify({"message": "Sesion cerrada"})
 
+    def update_profile(self):
+        """
+        Actualizar perfil del usuario autenticado
+        ---
+        tags:
+          - Autenticacion
+        consumes:
+          - application/json
+        responses:
+          200:
+            description: Perfil actualizado correctamente.
+          401:
+            description: El usuario no ha iniciado sesion.
+        """
+        user = self.current_user()
+
+        if user is None:
+            return jsonify({"error": "Debes iniciar sesion"}), 401
+
+        data = request.get_json(silent=True) or {}
+        user = self.auth_service.update_profile(user, data)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Perfil actualizado correctamente",
+            "user": user.to_dict(),
+        })
+
+    def list_users(self):
+        user = self.current_user()
+
+        if user is None:
+            return jsonify({"error": "Debes iniciar sesion"}), 401
+
+        try:
+            users = self.auth_service.list_users(user)
+        except PermissionError as exc:
+            return jsonify({"error": str(exc)}), 403
+
+        return jsonify({
+            "users": [self.user_summary(item, include_photo=True) for item in users],
+        })
+
+    def reset_user_password(self, user_id):
+        user = self.current_user()
+
+        if user is None:
+            return jsonify({"error": "Debes iniciar sesion"}), 401
+
+        try:
+            target_user, sent, temporary_password = self.auth_service.reset_password(user, user_id)
+            db.session.commit()
+        except PermissionError as exc:
+            return jsonify({"error": str(exc)}), 403
+        except ValueError as exc:
+            db.session.rollback()
+            return jsonify({"error": str(exc)}), 400
+
+        return jsonify({
+            "message": "Contrasena restablecida correctamente",
+            "user": self.user_summary(target_user),
+            "email_sent": sent,
+            "temporary_password": temporary_password,
+        })
+
     def create_invitation(self):
         """
         Crear invitacion de usuario
@@ -190,10 +268,11 @@ class AuthController:
         data = request.get_json(silent=True) or {}
 
         try:
-            invitation, link, sent = self.invitation_service.create_invitation(
+            invitation, link, sent, email_error = self.invitation_service.create_invitation(
                 email=data.get("email"),
                 rol=data.get("rol", "cliente"),
                 invited_by=user,
+                created_ip=request.remote_addr,
             )
         except PermissionError as exc:
             return jsonify({"error": str(exc)}), 403
@@ -205,6 +284,7 @@ class AuthController:
             "invitation": invitation.to_dict(),
             "registration_link": link,
             "email_sent": sent,
+            "email_error": email_error,
         }), 201
 
     def get_invitation(self, token):
@@ -274,6 +354,9 @@ class AuthController:
                 token=data.get("token"),
                 nombre=data.get("nombre"),
                 password=data.get("password"),
+                telefono=data.get("telefono"),
+                cargo=data.get("cargo"),
+                bio=data.get("bio"),
             )
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400

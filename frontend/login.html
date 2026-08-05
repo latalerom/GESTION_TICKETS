@@ -4,22 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="icon" type="image/png" href="image/favicon_logo.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <main class="center-layout">
-        <section class="panel auth-panel">
-            <h1>Iniciar sesion</h1>
-            <p class="muted">Ingresa con tu correo y contrasena.</p>
+<body class="auth-body">
+    <main class="auth-layout">
+        <section class="auth-hero" aria-label="Sistema de soporte">
+            <div class="auth-brand">
+                <img class="brand-logo" src="image/favicon_logo.png" alt="TicketFlow">
+                <div>
+                    <strong>TicketFlow</strong>
+                    <small>Mesa de ayuda</small>
+                </div>
+            </div>
+            <div class="auth-copy">
+                <div class="auth-copy-slider" aria-live="polite">
+                    <article class="auth-copy-card">
+                        <p class="eyebrow">Acceso seguro</p>
+                        <h1>Gestiona solicitudes sin perder el hilo.</h1>
+                        <p>Administra tickets, prioridades y usuarios desde un panel claro para tu equipo.</p>
+                    </article>
+                    <article class="auth-copy-card">
+                        <p class="eyebrow">Portal de clientes</p>
+                        <h1>Reporta tu caso y sigue cada avance.</h1>
+                        <p>Crea solicitudes, revisa respuestas y consulta el estado de tus tickets desde un espacio sencillo.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
 
-            <div id="login-message" class="message hidden"></div>
+        <section class="panel auth-panel auth-card">
+            <p class="eyebrow">Bienvenido</p>
+            <h2>Iniciar sesion</h2>
+            <p class="muted">Ingresa con tu correo y contrasena.</p>
 
             <form id="login-form">
                 <label for="email">Correo</label>
                 <input id="email" name="email" type="email" autocomplete="email" required>
 
                 <label for="password">Contrasena</label>
-                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <div class="password-field">
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                    <button class="password-toggle" type="button" data-password-toggle="#password" aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+                        <span class="password-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
 
                 <button class="button primary full" type="submit">Ingresar</button>
             </form>
@@ -27,6 +56,7 @@
     </main>
 
     <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
 </body>
 </html>

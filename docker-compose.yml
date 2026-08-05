@@ -11,6 +11,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  # Servicio de API: concentra la logica MVC del backend y expone las rutas /api.
   backend:
     build:
       context: .
@@ -30,12 +31,27 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_USE_TLS: ${MAIL_USE_TLS:-true}
+      MAIL_USE_SSL: ${MAIL_USE_SSL:-false}
+      MAIL_TIMEOUT: ${MAIL_TIMEOUT:-20}
       MAIL_SENDER: ${MAIL_SENDER:-no-reply@soporte.local}
     ports:
       - "${BACKEND_PORT:-5001}:5000"
     depends_on:
       - mysql
 
+  # Servicio de frontend: sirve los archivos estaticos y reenvia /api al backend.
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: frontend_app
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-8081}:80"
+    depends_on:
+      - backend
+
+  # Servicio de administracion de BD para inspeccionar MySQL desde el navegador.
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: phpmyadmin_app

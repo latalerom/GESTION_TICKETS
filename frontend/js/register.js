@@ -2,11 +2,9 @@ const params = new URLSearchParams(window.location.search);
 const token = params.get("token");
 const summary = document.querySelector("#register-summary");
 const form = document.querySelector("#register-form");
-const message = document.querySelector("#register-message");
 
 function showMessage(text, type = "error") {
-    message.textContent = text;
-    message.className = `message ${type}`;
+    ui.toast(text, type);
 }
 
 async function loadInvitation() {
@@ -31,7 +29,11 @@ form.addEventListener("submit", async (event) => {
     const formData = new FormData(form);
 
     try {
-        await api.register(token, formData.get("nombre"), formData.get("password"));
+        await api.register(token, formData.get("nombre"), formData.get("password"), {
+            telefono: formData.get("telefono"),
+            cargo: formData.get("cargo"),
+            bio: formData.get("bio"),
+        });
         showMessage("Cuenta creada correctamente. Redirigiendo...", "success");
         window.setTimeout(() => {
             window.location.href = "dashboard.html";

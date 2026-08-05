@@ -4,29 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link rel="icon" type="image/png" href="image/favicon_logo.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="app-body">
     <aside class="sidebar">
         <div class="brand-block">
-            <span class="brand-mark">ST</span>
-            <div>
-                <strong>Sistema Tickets</strong>
+            <img class="brand-logo" src="image/favicon_logo.png" alt="TicketFlow">
+            <div class="brand-copy">
+                <strong>TicketFlow</strong>
                 <small id="sidebar-role">Cargando...</small>
             </div>
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Contraer menu" aria-expanded="true">
+                <span aria-hidden="true">‹</span>
+            </button>
         </div>
 
         <nav class="sidebar-nav">
-            <button class="nav-item active" type="button" data-view="tickets">Tickets</button>
-            <button class="nav-item" type="button" data-view="create">Crear caso</button>
-            <button class="nav-item admin-only hidden" type="button" data-view="reports">Reportes</button>
-            <button class="nav-item admin-only hidden" type="button" data-view="users">Usuarios</button>
-            <button class="nav-item" type="button" data-view="profile">Perfil</button>
+            <button class="nav-item active" type="button" data-view="tickets" title="Tickets">
+                <span class="nav-icon" aria-hidden="true">▦</span>
+                <span class="nav-label">Tickets</span>
+            </button>
+            <button class="nav-item" type="button" data-view="create" title="Crear caso">
+                <span class="nav-icon" aria-hidden="true">＋</span>
+                <span class="nav-label">Crear caso</span>
+            </button>
+            <button class="nav-item admin-only hidden" type="button" data-view="reports" title="Reportes">
+                <span class="nav-icon" aria-hidden="true">▤</span>
+                <span class="nav-label">Reportes</span>
+            </button>
+            <button class="nav-item admin-only hidden" type="button" data-view="users" title="Usuarios">
+                <span class="nav-icon" aria-hidden="true">◉</span>
+                <span class="nav-label">Usuarios</span>
+            </button>
+            <button class="nav-item" type="button" data-view="profile" title="Perfil">
+                <span class="nav-icon" aria-hidden="true">◇</span>
+                <span class="nav-label">Perfil</span>
+            </button>
         </nav>
 
         <div class="sidebar-footer">
             <span id="realtime-status" class="realtime-status offline">Tiempo real desconectado</span>
-            <button id="logout-button" class="button secondary full" type="button">Cerrar sesion</button>
+            <button id="logout-button" class="button secondary full" type="button" title="Cerrar sesion">
+                <span class="nav-icon" aria-hidden="true">↗</span>
+                <span class="nav-label">Cerrar sesion</span>
+            </button>
         </div>
     </aside>
 
@@ -37,7 +59,17 @@
                 <h1 id="page-title">Panel de Tickets</h1>
                 <p id="user-info" class="muted">Cargando sesion...</p>
             </div>
-            <button id="reload-button" class="button secondary" type="button">Actualizar</button>
+            <div class="header-actions">
+                <div class="session-chip" aria-label="Usuario actual">
+                    <img id="session-photo-preview" alt="Foto de perfil" class="session-photo hidden">
+                    <span id="session-avatar" class="session-avatar">U</span>
+                    <div>
+                        <strong id="session-name">Usuario</strong>
+                        <small id="session-role">Rol</small>
+                    </div>
+                </div>
+                <button id="reload-button" class="button secondary" type="button">Actualizar</button>
+            </div>
         </header>
 
         <section id="view-tickets" class="module-view active">
@@ -49,6 +81,10 @@
                         <h2 id="tickets-title">Tickets</h2>
                         <p id="role-summary" class="muted">Cargando informacion...</p>
                     </div>
+                    <div class="support-search">
+                        <label class="sr-only" for="ticket-search">Buscar tickets</label>
+                        <input id="ticket-search" type="search" placeholder="Buscar por numero, area o quien reporto">
+                    </div>
                 </div>
 
                 <div class="table-wrap">
@@ -56,7 +92,7 @@
                         <thead id="tickets-head"></thead>
                         <tbody id="tickets-body">
                             <tr>
-                                <td colspan="8">Cargando tickets...</td>
+                                <td colspan="7">Cargando tickets...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -65,42 +101,68 @@
         </section>
 
         <section id="view-create" class="module-view">
-            <div class="split-layout">
-                <section class="panel">
-                    <h2 id="form-title">Crear ticket</h2>
-                    <p class="muted">Selecciona el departamento y completa la informacion del caso.</p>
-                    <div id="ticket-message" class="message hidden"></div>
-
+            <div class="split-layout create-layout">
+                <section class="panel create-panel">
+                    <div class="create-hero">
+                        <div>
+                            <p class="eyebrow">Nuevo caso</p>
+                            <h2 id="form-title">Crear ticket</h2>
+                            <p class="muted">Completa la informacion del caso para enviarlo a la mesa de ayuda.</p>
+                        </div>
+                    </div>
                     <form id="ticket-form">
                         <input type="hidden" id="ticket-id">
+                        <input type="hidden" id="titulo">
                         <input type="hidden" id="departamento">
-                        <input type="hidden" id="area">
-                        <input type="hidden" id="tipo-ticket">
+                        <input type="hidden" id="observacion">
 
-                        <label>Departamento, area y tipo</label>
-                        <div id="department-tree" class="department-tree"></div>
-                        <p id="selected-ticket-path" class="selected-path">Sin seleccion</p>
+                        <div class="form-section">
+                            <label for="reportado-por">Quien hace el reporte</label>
+                            <input id="reportado-por" name="reportado_por" type="text" required>
 
-                        <label for="titulo">Numero o titulo del caso</label>
-                        <input id="titulo" name="titulo" type="text" required>
+                            <label for="area">Area</label>
+                            <select id="area" name="area" required>
+                                <option value="">Selecciona un area</option>
+                                <option value="Nomina">Nomina</option>
+                                <option value="Contabilidad">Contabilidad</option>
+                                <option value="Talento humano">Talento humano</option>
+                                <option value="Bodega">Bodega</option>
+                            </select>
 
-                        <label for="reportado-por">Quien hace el reporte</label>
-                        <input id="reportado-por" name="reportado_por" type="text" required>
+                            <label for="tipo-ticket">Tipo de incidente</label>
+                            <select id="tipo-ticket" name="tipo_ticket" required>
+                                <option value="">Selecciona un tipo de incidente</option>
+                                <option value="Acceso a sistemas">Acceso a sistemas</option>
+                                <option value="Equipo o herramienta de trabajo">Equipo o herramienta de trabajo</option>
+                                <option value="Solicitud de documento">Solicitud de documento</option>
+                                <option value="Novedad de nomina">Novedad de nomina</option>
+                                <option value="Pago o factura">Pago o factura</option>
+                                <option value="Inventario o despacho">Inventario o despacho</option>
+                                <option value="Solicitud administrativa">Solicitud administrativa</option>
+                                <option value="Otro">Otro</option>
+                            </select>
 
-                        <label for="descripcion">Descripcion</label>
-                        <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+                            <div id="incident-other-field" class="hidden">
+                                <label for="incidente-otro">Otro incidente</label>
+                                <input id="incidente-otro" name="incidente_otro" type="text" placeholder="Especifica cual es el incidente">
+                            </div>
 
-                        <label for="observacion">Observacion</label>
-                        <textarea id="observacion" name="observacion" rows="3"></textarea>
+                            <label for="descripcion">Descripcion del caso</label>
+                            <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
 
-                        <div class="actions">
-                            <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
-                            <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
+                            <div class="actions">
+                                <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
+                                <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
+                            </div>
                         </div>
                     </form>
                 </section>
 
-                <aside class="panel activity-card">
+                <aside class="panel activity-card create-side-card">
+                    <div class="case-tip">
+                        <strong>Auditoria activa</strong>
+                        <p id="case-tip-text" class="muted">Cada creacion, modificacion y cierre queda registrado con usuario, fecha y detalle.</p>
+                    </div>
                     <h3>Actividad en vivo</h3>
                     <ul id="activity-list" class="activity-list">
                         <li>No hay actividad reciente.</li>
@@ -116,13 +178,23 @@
                         <h2>Reportes generales</h2>
                         <p class="muted">Gestion de casos, prioridad y estado para administradores.</p>
                     </div>
+                    <div class="toolbar-actions">
+                        <div class="report-search">
+                            <label class="sr-only" for="report-search">Buscar reportes</label>
+                            <input id="report-search" type="search" placeholder="Buscar por numero, area o quien reporto">
+                        </div>
+                        <button id="export-excel-button" class="button secondary" type="button">Exportar Excel</button>
+                        <button id="export-pdf-button" class="button primary" type="button">Exportar PDF</button>
+                    </div>
                 </div>
+                <div id="reports-summary" class="reports-summary" aria-label="Resumen de reportes"></div>
                 <div class="table-wrap">
-                    <table>
+                    <table class="reports-table">
                         <thead>
                             <tr>
                                 <th>Numero de caso</th>
                                 <th>Tipo de incidente</th>
+                                <th>Area</th>
                                 <th>Observacion</th>
                                 <th>Quien lo realizo</th>
                                 <th>Prioridad</th>
@@ -131,7 +203,7 @@
                         </thead>
                         <tbody id="reports-body">
                             <tr>
-                                <td colspan="6">Cargando reportes...</td>
+                                <td colspan="7">Cargando reportes...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -140,42 +212,109 @@
         </section>
 
         <section id="view-users" class="module-view admin-only hidden">
-            <div class="panel invite-panel">
-                <h2>Invitar usuario</h2>
-                <p class="muted">El usuario recibira un enlace para completar su registro.</p>
-                <div id="invite-message" class="message hidden"></div>
-                <form id="invite-form">
-                    <label for="invite-email">Correo</label>
-                    <input id="invite-email" name="email" type="email" required>
+            <div class="users-layout">
+                <div class="panel invite-panel user-invite-card">
+                    <p class="eyebrow">Acceso</p>
+                    <h2>Invitar usuario</h2>
+                    <p class="muted">El usuario recibira un enlace para completar su registro.</p>
+                    <form id="invite-form">
+                        <label for="invite-email">Correo</label>
+                        <input id="invite-email" name="email" type="email" required>
 
-                    <label for="invite-role">Rol</label>
-                    <select id="invite-role" name="rol">
-                        <option value="cliente">Cliente</option>
-                        <option value="admin">Administrador</option>
-                    </select>
+                        <label for="invite-role">Rol</label>
+                        <select id="invite-role" name="rol">
+                            <option value="cliente">Cliente</option>
+                            <option value="admin">Administrador</option>
+                        </select>
 
-                    <button class="button primary full" type="submit">Enviar invitacion</button>
-                </form>
-                <p id="invite-link" class="invite-link muted"></p>
+                        <button class="button primary full" type="submit">Enviar invitacion</button>
+                    </form>
+                    <p id="invite-link" class="invite-link muted"></p>
+                </div>
+
+                <div class="panel table-panel users-panel">
+                    <div class="section-title">
+                        <div>
+                            <p class="eyebrow">Directorio</p>
+                            <h2>Usuarios existentes</h2>
+                            <p class="muted">Consulta administradores y clientes registrados.</p>
+                        </div>
+                        <button id="reload-users-button" class="button secondary" type="button">Actualizar usuarios</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Contacto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-body">
+                                <tr>
+                                    <td colspan="5">Cargando usuarios...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="view-profile" class="module-view">
-            <div class="panel profile-panel">
-                <h2>Perfil de usuario</h2>
-                <div class="profile-card">
-                    <div class="profile-avatar" id="profile-avatar">U</div>
-                    <div>
-                        <h3 id="profile-name">Usuario</h3>
-                        <p id="profile-email" class="muted">correo</p>
-                        <span id="profile-role" class="badge pendiente">rol</span>
+            <div class="panel profile-panel profile-shell">
+                <form id="profile-form" class="profile-form">
+                    <div class="profile-card profile-hero-card">
+                        <label class="profile-photo-picker" for="profile-photo">
+                            <span class="profile-photo-frame">
+                                <img id="profile-photo-preview" alt="Foto de perfil" class="profile-photo hidden">
+                                <span class="profile-avatar" id="profile-avatar">U</span>
+                            </span>
+                            <small>Cambiar foto</small>
+                        </label>
+                        <input id="profile-photo" class="hidden" type="file" accept="image/*">
+                        <div>
+                            <p class="muted">Informacion visible en tu cuenta</p>
+                            <h3 id="profile-name">Usuario</h3>
+                            <p id="profile-email" class="muted">correo</p>
+                            <span id="profile-role" class="badge pendiente">rol</span>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="profile-edit-card">
+                        <div class="section-title">
+                            <div>
+                                <p class="eyebrow">Perfil</p>
+                                <h2>Datos personales</h2>
+                                <p class="muted">Mantiene actualizada la informacion visible en tu cuenta.</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-fields">
+                            <label for="profile-nombre">Nombre</label>
+                            <input id="profile-nombre" name="nombre" type="text" autocomplete="name">
+
+                            <label for="profile-phone">Telefono</label>
+                            <input id="profile-phone" name="telefono" type="tel" autocomplete="tel">
+
+                            <label for="profile-cargo">Cargo o area</label>
+                            <input id="profile-cargo" name="cargo" type="text">
+
+                            <label for="profile-bio">Informacion adicional</label>
+                            <textarea id="profile-bio" name="bio" rows="4"></textarea>
+                        </div>
+
+                        <button class="button primary" type="submit">Guardar perfil</button>
+                    </div>
+                </form>
             </div>
         </section>
     </main>
 
     <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>
