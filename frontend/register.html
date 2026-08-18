@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="icon" type="image/png" href="image/favicon_logo.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <main class="center-layout">
         <section class="panel auth-panel">
@@ -24,13 +26,18 @@
                 <input id="cargo" name="cargo" type="text" required>
 
                 <label for="bio">Informacion adicional</label>
-                <textarea id="bio" name="bio" rows="3" placeholder="Ejemplo: area, sede o datos utiles para soporte"></textarea>
+                <textarea id="bio" name="bio" rows="3"
+                    placeholder="Ejemplo: area, sede o datos utiles para soporte"></textarea>
 
                 <label for="password">Contrasena</label>
                 <div class="password-field">
                     <input id="password" name="password" type="password" autocomplete="new-password" required>
-                    <button class="password-toggle" type="button" data-password-toggle="#password" aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
-                        <span class="password-icon" aria-hidden="true"></span>
+                    <button class="password-toggle" type="button" data-password-toggle="#password"
+                        aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                        <svg class="password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                            <circle cx="12" cy="12" r="2.8"></circle>
+                        </svg>
                     </button>
                 </div>
 
@@ -43,4 +50,5 @@
     <script src="js/ui.js"></script>
     <script src="js/register.js"></script>
 </body>
+
 </html>

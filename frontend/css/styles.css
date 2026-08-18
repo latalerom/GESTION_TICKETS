@@ -74,6 +74,7 @@ body {
 }
 
 @keyframes status-pulse {
+
     0%,
     100% {
         box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.24);
@@ -85,6 +86,7 @@ body {
 }
 
 @keyframes auth-copy-cycle {
+
     0%,
     42% {
         opacity: 1;
@@ -433,7 +435,10 @@ textarea {
     min-width: 22px;
     height: 22px;
     place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
     font-size: 18px;
+    font-weight: 800;
     line-height: 1;
 }
 
@@ -933,6 +938,38 @@ textarea {
 
 .create-hero h2 {
     margin-bottom: 6px;
+}
+
+.module-note-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.module-note-grid span {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-soft);
+    padding: 10px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.module-note-grid strong {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 5px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 13px;
 }
 
 .create-counter {
@@ -1582,43 +1619,19 @@ tbody tr:hover {
 }
 
 .password-icon {
-    position: relative;
     display: block;
     width: 20px;
-    height: 14px;
-    border: 2px solid currentColor;
-    border-radius: 70% 70% 60% 60%;
-    transform: rotate(45deg);
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: color var(--motion-fast), transform var(--motion-fast);
 }
 
-.password-icon::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    background: currentColor;
-    transform: translate(-50%, -50%);
-}
-
-.password-icon::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -5px;
-    display: none;
-    width: 28px;
-    height: 2px;
-    border-radius: 999px;
-    background: currentColor;
-    transform: rotate(90deg) translateX(-50%);
-    transform-origin: left center;
-}
-
-.password-icon-hidden::after {
-    display: block;
+.password-toggle:hover .password-icon {
+    transform: scale(1.05);
 }
 
 /* Notificaciones emergentes usadas por login, registro y dashboard. */
@@ -1777,6 +1790,7 @@ tbody tr:hover {
 
 /* Respeta usuarios que prefieren menos movimiento y evita animaciones innecesarias. */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
@@ -1939,15 +1953,19 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
 
+    .module-note-grid {
+        grid-template-columns: 1fr;
+    }
+
     .topbar .button {
         margin-top: 14px;
     }
 
-    .page-grid .panel + .panel {
+    .page-grid .panel+.panel {
         margin-top: 20px;
     }
 
-    .split-layout .panel + .panel {
+    .split-layout .panel+.panel {
         margin-top: 20px;
     }
 

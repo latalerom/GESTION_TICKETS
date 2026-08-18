@@ -69,7 +69,7 @@ function setSidebarCollapsed(collapsed) {
     if (sidebarToggle) {
         sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
         sidebarToggle.setAttribute("aria-label", collapsed ? "Expandir menu" : "Contraer menu");
-        sidebarToggle.querySelector("span").textContent = collapsed ? "›" : "‹";
+        sidebarToggle.querySelector("span").textContent = collapsed ? ">" : "<";
     }
 }
 

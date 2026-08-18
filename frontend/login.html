@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="icon" type="image/png" href="image/favicon_logo.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body class="auth-body">
     <main class="auth-layout">
         <section class="auth-hero" aria-label="Sistema de soporte">
@@ -27,7 +29,8 @@
                     <article class="auth-copy-card">
                         <p class="eyebrow">Portal de clientes</p>
                         <h1>Reporta tu caso y sigue cada avance.</h1>
-                        <p>Crea solicitudes, revisa respuestas y consulta el estado de tus tickets desde un espacio sencillo.</p>
+                        <p>Crea solicitudes, revisa respuestas y consulta el estado de tus tickets desde un espacio
+                            sencillo.</p>
                     </article>
                 </div>
             </div>
@@ -45,8 +48,12 @@
                 <label for="password">Contrasena</label>
                 <div class="password-field">
                     <input id="password" name="password" type="password" autocomplete="current-password" required>
-                    <button class="password-toggle" type="button" data-password-toggle="#password" aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
-                        <span class="password-icon" aria-hidden="true"></span>
+                    <button class="password-toggle" type="button" data-password-toggle="#password"
+                        aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                        <svg class="password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                            <circle cx="12" cy="12" r="2.8"></circle>
+                        </svg>
                     </button>
                 </div>
 
@@ -59,4 +66,5 @@
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
 </body>
+
 </html>

@@ -1,3 +1,5 @@
+from secrets import token_urlsafe
+
 from models import Usuario
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
@@ -8,7 +10,6 @@ from services.ticket_event_broker import ticket_event_broker
 
 class AuthService:
     PROFILE_FIELDS = ("nombre", "telefono", "cargo", "bio", "foto_perfil")
-    TEMPORARY_PASSWORD = "Soporte1234"
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -31,7 +32,12 @@ class AuthService:
         if user_id is None:
             return None
 
-        return Usuario.query.get(user_id)
+        user = Usuario.query.get(user_id)
+
+        if user is None or not user.activo:
+            return None
+
+        return user
 
     def password_matches(self, stored_password, plain_password):
         if stored_password.startswith("scrypt:") or stored_password.startswith("pbkdf2:"):
@@ -68,8 +74,9 @@ class AuthService:
         if not user.activo:
             raise ValueError("No puedes restablecer la contrasena de un usuario inactivo")
 
-        user.password = generate_password_hash(self.TEMPORARY_PASSWORD)
-        sent = self.mail_service.send_password_reset(user.email, self.TEMPORARY_PASSWORD)
+        temporary_password = self.generate_temporary_password()
+        user.password = generate_password_hash(temporary_password)
+        sent = self.mail_service.send_password_reset(user.email, temporary_password)
 
         ticket_event_broker.publish("activity", {
             "action": "user_password_reset",
@@ -79,4 +86,7 @@ class AuthService:
             "visibility": "admins",
         })
 
-        return user, sent, self.TEMPORARY_PASSWORD
+        return user, sent, temporary_password
+
+    def generate_temporary_password(self):
+        return f"Soporte-{token_urlsafe(9)}"

@@ -16,29 +16,29 @@
                 <small id="sidebar-role">Cargando...</small>
             </div>
             <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Contraer menu" aria-expanded="true">
-                <span aria-hidden="true">‹</span>
+                <span aria-hidden="true">&lt;</span>
             </button>
         </div>
 
         <nav class="sidebar-nav">
             <button class="nav-item active" type="button" data-view="tickets" title="Tickets">
-                <span class="nav-icon" aria-hidden="true">▦</span>
+                <span class="nav-icon" aria-hidden="true">T</span>
                 <span class="nav-label">Tickets</span>
             </button>
             <button class="nav-item" type="button" data-view="create" title="Crear caso">
-                <span class="nav-icon" aria-hidden="true">＋</span>
+                <span class="nav-icon" aria-hidden="true">+</span>
                 <span class="nav-label">Crear caso</span>
             </button>
             <button class="nav-item admin-only hidden" type="button" data-view="reports" title="Reportes">
-                <span class="nav-icon" aria-hidden="true">▤</span>
+                <span class="nav-icon" aria-hidden="true">R</span>
                 <span class="nav-label">Reportes</span>
             </button>
             <button class="nav-item admin-only hidden" type="button" data-view="users" title="Usuarios">
-                <span class="nav-icon" aria-hidden="true">◉</span>
+                <span class="nav-icon" aria-hidden="true">U</span>
                 <span class="nav-label">Usuarios</span>
             </button>
             <button class="nav-item" type="button" data-view="profile" title="Perfil">
-                <span class="nav-icon" aria-hidden="true">◇</span>
+                <span class="nav-icon" aria-hidden="true">P</span>
                 <span class="nav-label">Perfil</span>
             </button>
         </nav>
@@ -46,7 +46,7 @@
         <div class="sidebar-footer">
             <span id="realtime-status" class="realtime-status offline">Tiempo real desconectado</span>
             <button id="logout-button" class="button secondary full" type="button" title="Cerrar sesion">
-                <span class="nav-icon" aria-hidden="true">↗</span>
+                <span class="nav-icon" aria-hidden="true">X</span>
                 <span class="nav-label">Cerrar sesion</span>
             </button>
         </div>
@@ -68,7 +68,7 @@
                         <small id="session-role">Rol</small>
                     </div>
                 </div>
-                <button id="reload-button" class="button secondary" type="button">Actualizar</button>
+                <button id="reload-button" class="button secondary" type="button">Recargar datos</button>
             </div>
         </header>
 
@@ -110,6 +110,11 @@
                             <p class="muted">Completa la informacion del caso para enviarlo a la mesa de ayuda.</p>
                         </div>
                     </div>
+                    <div class="module-note-grid" aria-label="Pasos para crear un caso">
+                        <span><strong>1</strong> Identifica quien reporta</span>
+                        <span><strong>2</strong> Selecciona area y tipo</span>
+                        <span><strong>3</strong> Describe el caso</span>
+                    </div>
                     <form id="ticket-form">
                         <input type="hidden" id="ticket-id">
                         <input type="hidden" id="titulo">
@@ -117,7 +122,7 @@
                         <input type="hidden" id="observacion">
 
                         <div class="form-section">
-                            <label for="reportado-por">Quien hace el reporte</label>
+                            <label for="reportado-por">Persona que reporta</label>
                             <input id="reportado-por" name="reportado_por" type="text" required>
 
                             <label for="area">Area</label>
@@ -148,7 +153,7 @@
                             </div>
 
                             <label for="descripcion">Descripcion del caso</label>
-                            <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+                            <textarea id="descripcion" name="descripcion" rows="4" placeholder="Resume que ocurre, desde cuando pasa y que necesita el usuario." required></textarea>
 
                             <div class="actions">
                                 <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
@@ -176,7 +181,7 @@
                 <div class="section-title">
                     <div>
                         <h2>Reportes generales</h2>
-                        <p class="muted">Gestion de casos, prioridad y estado para administradores.</p>
+                        <p class="muted">Gestion de casos, prioridad, estado y exportacion para administradores.</p>
                     </div>
                     <div class="toolbar-actions">
                         <div class="report-search">
@@ -216,7 +221,7 @@
                 <div class="panel invite-panel user-invite-card">
                     <p class="eyebrow">Acceso</p>
                     <h2>Invitar usuario</h2>
-                    <p class="muted">El usuario recibira un enlace para completar su registro.</p>
+                    <p class="muted">Crea accesos por correo para clientes o administradores.</p>
                     <form id="invite-form">
                         <label for="invite-email">Correo</label>
                         <input id="invite-email" name="email" type="email" required>

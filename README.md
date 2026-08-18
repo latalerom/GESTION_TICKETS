@@ -65,6 +65,7 @@ Tambien se usa un enfoque orientado a eventos mediante Server-Sent Events (SSE).
 - Los clientes solo ven sus propios tickets.
 - Los administradores ven todos los tickets y pueden cambiar estado y prioridad.
 - Los administradores pueden asignar un responsable a un ticket mediante `asignado_a_id`.
+- El cierre de tickets exige registrar la solucion aplicada y guarda quien cerro el caso.
 - Historial auditable de creacion, actualizacion, cambios de estado, prioridad, asignacion y eliminacion de tickets.
 - Eventos en tiempo real para cambios de tickets y actividad del sistema.
 - Documentacion interactiva de la API con Swagger.
@@ -95,7 +96,7 @@ El proyecto tenia una base funcional para mesa de ayuda, pero el esquema origina
 Mejoras implementadas:
 
 - Auditoria en `usuario` y `ticket` con `creado_en` y `actualizado_en`.
-- Cierre trazable de tickets con `cerrado_en` cuando el estado pasa a `resuelto`.
+- Cierre trazable de tickets con `cerrado_en`, `cerrado_por_id` y `solucion_cierre` cuando el estado pasa a `resuelto`.
 - Asignacion opcional de responsable con `ticket.asignado_a_id`.
 - Usuarios activables/desactivables mediante `usuario.activo`.
 - Invitaciones auditables con `invitado_por_id` y `creada_ip`.
@@ -178,6 +179,8 @@ La API se expone bajo el prefijo `/api`.
 | `GET` | `/api/session` | Consulta la sesion activa. |
 | `POST` | `/api/logout` | Cierra sesion. |
 | `PUT` | `/api/profile` | Actualiza datos del perfil autenticado. |
+| `GET` | `/api/users` | Lista usuarios registrados. Solo admin. |
+| `POST` | `/api/users/<id>/reset-password` | Restablece la contrasena de un usuario activo. Solo admin. |
 | `POST` | `/api/invitations` | Crea una invitacion de usuario. Solo admin. |
 | `GET` | `/api/invitations/<token>` | Consulta una invitacion valida. |
 | `POST` | `/api/register` | Registra un usuario invitado. |
@@ -189,7 +192,7 @@ La API se expone bajo el prefijo `/api`.
 | `PUT` | `/api/tickets/<id>` | Actualiza un ticket. |
 | `DELETE` | `/api/tickets/<id>` | Elimina un ticket. |
 
-En la actualizacion de tickets, un administrador tambien puede enviar `asignado_a_id` para asignar el caso a un usuario activo. Cuando `estado` cambia a `resuelto`, el backend guarda automaticamente `cerrado_en`; si el ticket vuelve a `pendiente` o `proceso`, el cierre se limpia.
+En la actualizacion de tickets, un administrador tambien puede enviar `asignado_a_id` para asignar el caso a un usuario activo. Cuando `estado` cambia a `resuelto`, el backend exige `solucion_cierre`, guarda automaticamente `cerrado_en` y `cerrado_por_id`, y bloquea futuras modificaciones o eliminaciones del ticket.
 
 ## Base de datos
 
@@ -232,6 +235,8 @@ Guarda los tickets creados por los usuarios.
 | `usuario_id` | `INT` | No nulo, llave foranea hacia `usuario.id` |
 | `asignado_a_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
 | `estado` | `VARCHAR(50)` | No nulo, valor por defecto: `pendiente` |
+| `solucion_cierre` | `TEXT` | Opcional, requerida al cerrar como `resuelto` |
+| `cerrado_por_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
 | `creado_en` | `DATETIME` | No nulo, valor por defecto: fecha actual |
 | `actualizado_en` | `DATETIME` | No nulo, se actualiza automaticamente |
 | `cerrado_en` | `DATETIME` | Opcional, fecha de resolucion |

@@ -37,12 +37,15 @@ CREATE TABLE IF NOT EXISTS ticket (
   usuario_id INT NOT NULL,
   asignado_a_id INT NULL,
   estado VARCHAR(50) NOT NULL DEFAULT 'pendiente',
+  solucion_cierre TEXT NULL,
+  cerrado_por_id INT NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   cerrado_en DATETIME NULL,
   PRIMARY KEY (id),
   KEY ix_ticket_usuario_id (usuario_id),
   KEY ix_ticket_asignado_a_id (asignado_a_id),
+  KEY ix_ticket_cerrado_por_id (cerrado_por_id),
   KEY ix_ticket_estado (estado),
   KEY ix_ticket_prioridad (prioridad),
   KEY ix_ticket_creado_en (creado_en),
@@ -54,6 +57,11 @@ CREATE TABLE IF NOT EXISTS ticket (
     ON DELETE RESTRICT,
   CONSTRAINT fk_ticket_asignado_a
     FOREIGN KEY (asignado_a_id)
+    REFERENCES usuario (id)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL,
+  CONSTRAINT fk_ticket_cerrado_por
+    FOREIGN KEY (cerrado_por_id)
     REFERENCES usuario (id)
     ON UPDATE CASCADE
     ON DELETE SET NULL,

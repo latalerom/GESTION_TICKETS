@@ -52,6 +52,14 @@ class TicketService:
         departamento=None,
         observacion=None,
     ):
+        titulo = self.clean_text(titulo)
+        descripcion = self.clean_text(descripcion)
+        tipo_ticket = self.clean_text(tipo_ticket)
+        reportado_por = self.clean_text(reportado_por)
+        area = self.clean_text(area)
+        departamento = self.clean_text(departamento)
+        observacion = self.clean_text(observacion)
+
         if not titulo or not descripcion or not tipo_ticket or not area or not departamento:
             raise ValueError("Titulo, descripcion, tipo, area y departamento son obligatorios")
 
@@ -105,13 +113,26 @@ class TicketService:
         if ticket.estado == "resuelto":
             raise PermissionError("El ticket ya esta resuelto y no puede modificarse")
 
+        titulo = self.clean_text(titulo)
+        descripcion = self.clean_text(descripcion)
+        observacion = self.clean_text(observacion)
+        tipo_ticket = self.clean_text(tipo_ticket)
+        reportado_por = self.clean_text(reportado_por)
+        area = self.clean_text(area)
+        departamento = self.clean_text(departamento)
+        solucion_cierre = self.clean_text(solucion_cierre)
+
         previous_estado = ticket.estado
         changes = {}
         if titulo is not None:
+            if not titulo:
+                raise ValueError("El titulo no puede quedar vacio")
             self.track_change(changes, "titulo", ticket.titulo, titulo)
             ticket.titulo = titulo
 
         if descripcion is not None:
+            if not descripcion:
+                raise ValueError("La descripcion no puede quedar vacia")
             self.track_change(changes, "descripcion", ticket.descripcion, descripcion)
             ticket.descripcion = descripcion
 
@@ -120,6 +141,8 @@ class TicketService:
             ticket.observacion = observacion
 
         if tipo_ticket is not None:
+            if not tipo_ticket:
+                raise ValueError("El tipo de ticket no puede quedar vacio")
             self.track_change(changes, "tipo_ticket", ticket.tipo_ticket, tipo_ticket)
             ticket.tipo_ticket = tipo_ticket
 
@@ -128,10 +151,14 @@ class TicketService:
             ticket.reportado_por = reportado_por
 
         if area is not None:
+            if not area:
+                raise ValueError("El area no puede quedar vacia")
             self.track_change(changes, "area", ticket.area, area)
             ticket.area = area
 
         if departamento is not None:
+            if not departamento:
+                raise ValueError("El departamento no puede quedar vacio")
             self.track_change(changes, "departamento", ticket.departamento, departamento)
             ticket.departamento = departamento
 
@@ -153,7 +180,7 @@ class TicketService:
             if estado not in self.VALID_ESTADOS:
                 raise ValueError("Estado invalido")
 
-            if estado == "resuelto" and not (solucion_cierre or "").strip():
+            if estado == "resuelto" and not solucion_cierre:
                 raise ValueError("Debes escribir como termino el caso y que solucion se dio")
 
             self.track_change(changes, "estado", ticket.estado, estado)
@@ -165,9 +192,8 @@ class TicketService:
             ticket.cerrado_por_id = user.id if estado == "resuelto" else None
 
             if estado == "resuelto":
-                solution = solucion_cierre.strip()
-                self.track_change(changes, "solucion_cierre", ticket.solucion_cierre, solution)
-                ticket.solucion_cierre = solution
+                self.track_change(changes, "solucion_cierre", ticket.solucion_cierre, solucion_cierre)
+                ticket.solucion_cierre = solucion_cierre
             elif previous_estado == "resuelto":
                 self.track_change(changes, "solucion_cierre", ticket.solucion_cierre, None)
                 ticket.solucion_cierre = None
@@ -288,3 +314,9 @@ class TicketService:
             return value.isoformat()
 
         return str(value)
+
+    def clean_text(self, value):
+        if value is None:
+            return None
+
+        return str(value).strip()
