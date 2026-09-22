@@ -8,6 +8,13 @@ from services.ticket_event_broker import ticket_event_broker
 class TicketService:
     VALID_ESTADOS = {"pendiente", "proceso", "resuelto"}
     VALID_PRIORIDADES = {"baja", "media", "alta", "critica"}
+    MAX_LENGTHS = {
+        "titulo": 200,
+        "tipo_ticket": 100,
+        "reportado_por": 100,
+        "area": 100,
+        "departamento": 100,
+    }
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -62,6 +69,14 @@ class TicketService:
 
         if not titulo or not descripcion or not tipo_ticket or not area or not departamento:
             raise ValueError("Titulo, descripcion, tipo, area y departamento son obligatorios")
+
+        self.validate_lengths({
+            "titulo": titulo,
+            "tipo_ticket": tipo_ticket,
+            "reportado_por": reportado_por,
+            "area": area,
+            "departamento": departamento,
+        })
 
         ticket = Ticket(
             titulo=titulo,
@@ -127,6 +142,7 @@ class TicketService:
         if titulo is not None:
             if not titulo:
                 raise ValueError("El titulo no puede quedar vacio")
+            self.validate_lengths({"titulo": titulo})
             self.track_change(changes, "titulo", ticket.titulo, titulo)
             ticket.titulo = titulo
 
@@ -143,22 +159,26 @@ class TicketService:
         if tipo_ticket is not None:
             if not tipo_ticket:
                 raise ValueError("El tipo de ticket no puede quedar vacio")
+            self.validate_lengths({"tipo_ticket": tipo_ticket})
             self.track_change(changes, "tipo_ticket", ticket.tipo_ticket, tipo_ticket)
             ticket.tipo_ticket = tipo_ticket
 
         if reportado_por is not None:
+            self.validate_lengths({"reportado_por": reportado_por})
             self.track_change(changes, "reportado_por", ticket.reportado_por, reportado_por)
             ticket.reportado_por = reportado_por
 
         if area is not None:
             if not area:
                 raise ValueError("El area no puede quedar vacia")
+            self.validate_lengths({"area": area})
             self.track_change(changes, "area", ticket.area, area)
             ticket.area = area
 
         if departamento is not None:
             if not departamento:
                 raise ValueError("El departamento no puede quedar vacio")
+            self.validate_lengths({"departamento": departamento})
             self.track_change(changes, "departamento", ticket.departamento, departamento)
             ticket.departamento = departamento
 
@@ -320,3 +340,12 @@ class TicketService:
             return None
 
         return str(value).strip()
+
+    def validate_lengths(self, values):
+        for field, value in values.items():
+            if value is None:
+                continue
+
+            max_length = self.MAX_LENGTHS[field]
+            if len(value) > max_length:
+                raise ValueError(f"{field} no puede superar {max_length} caracteres")

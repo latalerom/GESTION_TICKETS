@@ -11,6 +11,7 @@ from services.ticket_event_broker import ticket_event_broker
 
 class InvitationService:
     VALID_ROLES = {"admin", "cliente"}
+    EMAIL_MAX_LENGTH = 254
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -19,8 +20,13 @@ class InvitationService:
         if not invited_by.is_admin():
             raise PermissionError("Solo un administrador puede invitar usuarios")
 
+        email = self.normalize_email(email)
+        rol = self.clean_text(rol)
+
         if not email:
             raise ValueError("El correo es obligatorio")
+
+        self.validate_email(email)
 
         if rol not in self.VALID_ROLES:
             raise ValueError("Rol invalido")
@@ -72,8 +78,17 @@ class InvitationService:
         if invitation is None:
             raise ValueError("La invitacion no existe o ya expiro")
 
+        nombre = self.clean_text(nombre)
+        telefono = self.clean_text(telefono)
+        cargo = self.clean_text(cargo)
+        bio = self.clean_text(bio)
+
         if not nombre or not password:
             raise ValueError("Nombre y contrasena son obligatorios")
+
+        self.validate_length("nombre", nombre, 100)
+        self.validate_length("telefono", telefono, 30)
+        self.validate_length("cargo", cargo, 100)
 
         existing_user = Usuario.query.filter_by(email=invitation.email).first()
         if existing_user is not None:
@@ -104,3 +119,23 @@ class InvitationService:
         ticket_event_broker.publish("activity", payload)
 
         return user
+
+    def normalize_email(self, value):
+        return self.clean_text(value).lower() if value is not None else None
+
+    def clean_text(self, value):
+        if value is None:
+            return None
+
+        return str(value).strip()
+
+    def validate_email(self, email):
+        if len(email) > self.EMAIL_MAX_LENGTH:
+            raise ValueError(f"El correo no puede superar {self.EMAIL_MAX_LENGTH} caracteres")
+
+        if "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+            raise ValueError("Correo invalido")
+
+    def validate_length(self, field, value, max_length):
+        if value is not None and len(value) > max_length:
+            raise ValueError(f"{field} no puede superar {max_length} caracteres")

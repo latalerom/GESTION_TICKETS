@@ -1,16 +1,30 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import CheckConstraint, Enum
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
+USER_ROLE = Enum("admin", "cliente", name="user_role")
+TICKET_STATUS = Enum("pendiente", "proceso", "resuelto", name="ticket_status")
+TICKET_PRIORITY = Enum("baja", "media", "alta", "critica", name="ticket_priority")
+HISTORY_ACTION = Enum("creado", "actualizado", "eliminado", name="history_action")
+
 
 class Usuario(db.Model):
+    __table_args__ = (
+        CheckConstraint("TRIM(email) <> ''", name="chk_usuario_email_not_empty"),
+        CheckConstraint("nombre IS NULL OR TRIM(nombre) <> ''", name="chk_usuario_nombre_not_empty"),
+        CheckConstraint("telefono IS NULL OR TRIM(telefono) <> ''", name="chk_usuario_telefono_not_empty"),
+        CheckConstraint("cargo IS NULL OR TRIM(cargo) <> ''", name="chk_usuario_cargo_not_empty"),
+        CheckConstraint("rol IN ('admin', 'cliente')", name="chk_usuario_rol"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100))
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    rol = db.Column(db.String(50), nullable=False, default="cliente", index=True)
+    email = db.Column(db.String(254), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    rol = db.Column(USER_ROLE, nullable=False, default="cliente", index=True)
     activo = db.Column(db.Boolean, nullable=False, default=True, index=True)
     telefono = db.Column(db.String(30))
     cargo = db.Column(db.String(100))
@@ -39,6 +53,19 @@ class Usuario(db.Model):
 class Ticket(db.Model):
     __table_args__ = (
         db.Index("ix_ticket_usuario_estado", "usuario_id", "estado"),
+        db.Index("ix_ticket_estado_prioridad_creado", "estado", "prioridad", "creado_en"),
+        db.Index("ix_ticket_asignado_estado", "asignado_a_id", "estado"),
+        CheckConstraint("TRIM(titulo) <> ''", name="chk_ticket_titulo_not_empty"),
+        CheckConstraint("TRIM(descripcion) <> ''", name="chk_ticket_descripcion_not_empty"),
+        CheckConstraint("TRIM(tipo_ticket) <> ''", name="chk_ticket_tipo_not_empty"),
+        CheckConstraint("TRIM(area) <> ''", name="chk_ticket_area_not_empty"),
+        CheckConstraint("TRIM(departamento) <> ''", name="chk_ticket_departamento_not_empty"),
+        CheckConstraint("estado IN ('pendiente', 'proceso', 'resuelto')", name="chk_ticket_estado"),
+        CheckConstraint("prioridad IN ('baja', 'media', 'alta', 'critica')", name="chk_ticket_prioridad"),
+        CheckConstraint(
+            "estado <> 'resuelto' OR (cerrado_en IS NOT NULL AND cerrado_por_id IS NOT NULL AND solucion_cierre IS NOT NULL AND TRIM(solucion_cierre) <> '')",
+            name="chk_ticket_resuelto_con_cierre",
+        ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -49,12 +76,12 @@ class Ticket(db.Model):
     reportado_por = db.Column(db.String(100))
     area = db.Column(db.String(100), nullable=False)
     departamento = db.Column(db.String(100), nullable=False)
-    prioridad = db.Column(db.String(50), nullable=False, default="media", index=True)
+    prioridad = db.Column(TICKET_PRIORITY, nullable=False, default="media", index=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False, index=True)
     usuario = db.relationship("Usuario", foreign_keys=[usuario_id])
     asignado_a_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), index=True)
     asignado_a = db.relationship("Usuario", foreign_keys=[asignado_a_id])
-    estado = db.Column(db.String(50), nullable=False, default="pendiente", index=True)
+    estado = db.Column(TICKET_STATUS, nullable=False, default="pendiente", index=True)
     solucion_cierre = db.Column(db.Text)
     cerrado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), index=True)
     cerrado_por = db.relationship("Usuario", foreign_keys=[cerrado_por_id])
@@ -92,11 +119,15 @@ class Ticket(db.Model):
 
 class TicketHistorial(db.Model):
     __tablename__ = "ticket_historial"
+    __table_args__ = (
+        CheckConstraint("accion IN ('creado', 'actualizado', 'eliminado')", name="chk_ticket_historial_accion"),
+        CheckConstraint("campo IS NULL OR TRIM(campo) <> ''", name="chk_ticket_historial_campo_not_empty"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id", ondelete="SET NULL"), index=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id", ondelete="SET NULL"), index=True)
-    accion = db.Column(db.String(50), nullable=False, index=True)
+    accion = db.Column(HISTORY_ACTION, nullable=False, index=True)
     campo = db.Column(db.String(100))
     valor_anterior = db.Column(db.Text)
     valor_nuevo = db.Column(db.Text)
@@ -122,10 +153,18 @@ class TicketHistorial(db.Model):
 
 
 class InvitacionUsuario(db.Model):
+    __table_args__ = (
+        db.Index("ix_invitacion_usuario_email_usada_expira", "email", "usada", "expira_en"),
+        CheckConstraint("TRIM(email) <> ''", name="chk_invitacion_usuario_email_not_empty"),
+        CheckConstraint("rol IN ('admin', 'cliente')", name="chk_invitacion_usuario_rol"),
+        CheckConstraint("expira_en > creada_en", name="chk_invitacion_usuario_expira_despues_creada"),
+        CheckConstraint("usada = false OR usada_en IS NOT NULL", name="chk_invitacion_usuario_usada_con_fecha"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), nullable=False, index=True)
-    rol = db.Column(db.String(50), nullable=False, default="cliente")
-    token = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(254), nullable=False, index=True)
+    rol = db.Column(USER_ROLE, nullable=False, default="cliente")
+    token = db.Column(db.String(128), unique=True, nullable=False)
     usada = db.Column(db.Boolean, nullable=False, default=False)
     invitado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), index=True)
     invitado_por = db.relationship("Usuario")

@@ -7,9 +7,9 @@ USE soporte_db;
 CREATE TABLE IF NOT EXISTS usuario (
   id INT NOT NULL AUTO_INCREMENT,
   nombre VARCHAR(100) NULL,
-  email VARCHAR(100) NOT NULL,
-  password VARCHAR(200) NOT NULL,
-  rol VARCHAR(50) NOT NULL DEFAULT 'cliente',
+  email VARCHAR(254) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  rol ENUM('admin', 'cliente') NOT NULL DEFAULT 'cliente',
   activo BOOLEAN NOT NULL DEFAULT true,
   telefono VARCHAR(30) NULL,
   cargo VARCHAR(100) NULL,
@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS usuario (
   UNIQUE KEY uq_usuario_email (email),
   KEY ix_usuario_rol (rol),
   KEY ix_usuario_activo (activo),
+  CONSTRAINT chk_usuario_email_not_empty CHECK (TRIM(email) <> ''),
+  CONSTRAINT chk_usuario_nombre_not_empty CHECK (nombre IS NULL OR TRIM(nombre) <> ''),
+  CONSTRAINT chk_usuario_telefono_not_empty CHECK (telefono IS NULL OR TRIM(telefono) <> ''),
+  CONSTRAINT chk_usuario_cargo_not_empty CHECK (cargo IS NULL OR TRIM(cargo) <> ''),
   CONSTRAINT chk_usuario_rol CHECK (rol IN ('admin', 'cliente'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -33,10 +37,10 @@ CREATE TABLE IF NOT EXISTS ticket (
   reportado_por VARCHAR(100) NULL,
   area VARCHAR(100) NOT NULL,
   departamento VARCHAR(100) NOT NULL,
-  prioridad VARCHAR(50) NOT NULL DEFAULT 'media',
+  prioridad ENUM('baja', 'media', 'alta', 'critica') NOT NULL DEFAULT 'media',
   usuario_id INT NOT NULL,
   asignado_a_id INT NULL,
-  estado VARCHAR(50) NOT NULL DEFAULT 'pendiente',
+  estado ENUM('pendiente', 'proceso', 'resuelto') NOT NULL DEFAULT 'pendiente',
   solucion_cierre TEXT NULL,
   cerrado_por_id INT NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -50,6 +54,8 @@ CREATE TABLE IF NOT EXISTS ticket (
   KEY ix_ticket_prioridad (prioridad),
   KEY ix_ticket_creado_en (creado_en),
   KEY ix_ticket_usuario_estado (usuario_id, estado),
+  KEY ix_ticket_estado_prioridad_creado (estado, prioridad, creado_en),
+  KEY ix_ticket_asignado_estado (asignado_a_id, estado),
   CONSTRAINT fk_ticket_usuario
     FOREIGN KEY (usuario_id)
     REFERENCES usuario (id)
@@ -65,15 +71,29 @@ CREATE TABLE IF NOT EXISTS ticket (
     REFERENCES usuario (id)
     ON UPDATE CASCADE
     ON DELETE SET NULL,
+  CONSTRAINT chk_ticket_titulo_not_empty CHECK (TRIM(titulo) <> ''),
+  CONSTRAINT chk_ticket_descripcion_not_empty CHECK (TRIM(descripcion) <> ''),
+  CONSTRAINT chk_ticket_tipo_not_empty CHECK (TRIM(tipo_ticket) <> ''),
+  CONSTRAINT chk_ticket_area_not_empty CHECK (TRIM(area) <> ''),
+  CONSTRAINT chk_ticket_departamento_not_empty CHECK (TRIM(departamento) <> ''),
   CONSTRAINT chk_ticket_estado CHECK (estado IN ('pendiente', 'proceso', 'resuelto')),
-  CONSTRAINT chk_ticket_prioridad CHECK (prioridad IN ('baja', 'media', 'alta', 'critica'))
+  CONSTRAINT chk_ticket_prioridad CHECK (prioridad IN ('baja', 'media', 'alta', 'critica')),
+  CONSTRAINT chk_ticket_resuelto_con_cierre CHECK (
+    estado <> 'resuelto'
+    OR (
+      cerrado_en IS NOT NULL
+      AND cerrado_por_id IS NOT NULL
+      AND solucion_cierre IS NOT NULL
+      AND TRIM(solucion_cierre) <> ''
+    )
+  )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS ticket_historial (
   id INT NOT NULL AUTO_INCREMENT,
   ticket_id INT NULL,
   usuario_id INT NULL,
-  accion VARCHAR(50) NOT NULL,
+  accion ENUM('creado', 'actualizado', 'eliminado') NOT NULL,
   campo VARCHAR(100) NULL,
   valor_anterior TEXT NULL,
   valor_nuevo TEXT NULL,
@@ -94,14 +114,15 @@ CREATE TABLE IF NOT EXISTS ticket_historial (
     REFERENCES usuario (id)
     ON UPDATE CASCADE
     ON DELETE SET NULL,
-  CONSTRAINT chk_ticket_historial_accion CHECK (accion IN ('creado', 'actualizado', 'eliminado'))
+  CONSTRAINT chk_ticket_historial_accion CHECK (accion IN ('creado', 'actualizado', 'eliminado')),
+  CONSTRAINT chk_ticket_historial_campo_not_empty CHECK (campo IS NULL OR TRIM(campo) <> '')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS invitacion_usuario (
   id INT NOT NULL AUTO_INCREMENT,
-  email VARCHAR(100) NOT NULL,
-  rol VARCHAR(50) NOT NULL DEFAULT 'cliente',
-  token VARCHAR(120) NOT NULL,
+  email VARCHAR(254) NOT NULL,
+  rol ENUM('admin', 'cliente') NOT NULL DEFAULT 'cliente',
+  token VARCHAR(128) NOT NULL,
   usada BOOLEAN NOT NULL DEFAULT false,
   invitado_por_id INT NULL,
   creada_en DATETIME NOT NULL,
@@ -113,12 +134,16 @@ CREATE TABLE IF NOT EXISTS invitacion_usuario (
   KEY ix_invitacion_usuario_email (email),
   KEY ix_invitacion_usuario_expira_en (expira_en),
   KEY ix_invitacion_usuario_invitado_por_id (invitado_por_id),
+  KEY ix_invitacion_usuario_email_usada_expira (email, usada, expira_en),
   CONSTRAINT fk_invitacion_usuario_invitado_por
     FOREIGN KEY (invitado_por_id)
     REFERENCES usuario (id)
     ON UPDATE CASCADE
     ON DELETE SET NULL,
-  CONSTRAINT chk_invitacion_usuario_rol CHECK (rol IN ('admin', 'cliente'))
+  CONSTRAINT chk_invitacion_usuario_email_not_empty CHECK (TRIM(email) <> ''),
+  CONSTRAINT chk_invitacion_usuario_rol CHECK (rol IN ('admin', 'cliente')),
+  CONSTRAINT chk_invitacion_usuario_expira_despues_creada CHECK (expira_en > creada_en),
+  CONSTRAINT chk_invitacion_usuario_usada_con_fecha CHECK (usada = false OR usada_en IS NOT NULL)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO usuario (nombre, email, password, rol, activo)

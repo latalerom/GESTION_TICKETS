@@ -184,7 +184,10 @@ class AuthController:
             return jsonify({"error": "Debes iniciar sesion"}), 401
 
         data = request.get_json(silent=True) or {}
-        user = self.auth_service.update_profile(user, data)
+        try:
+            user = self.auth_service.update_profile(user, data)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
 
         db.session.commit()
 

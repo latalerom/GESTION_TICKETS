@@ -103,6 +103,8 @@ Mejoras implementadas:
 - Trazabilidad de tickets en `ticket_historial` para saber que cambio, quien lo hizo y cuando.
 - Indices para busquedas por rol, usuario, estado, prioridad, fecha, responsable, correo de invitacion y expiracion.
 - Restricciones SQL recomendadas para roles, estados y prioridades en el script `datyabase.sql`.
+- Campos categoricos cerrados como `rol`, `estado`, `prioridad` y `accion` definidos como `ENUM` en MySQL.
+- Validaciones de integridad para evitar textos obligatorios vacios y tickets resueltos sin datos de cierre.
 - Seeder actualizado para crear las contrasenas iniciales con hash de Werkzeug en instalaciones nuevas.
 
 Mejoras escalables recomendadas para una siguiente etapa:
@@ -206,9 +208,9 @@ Guarda los usuarios que pueden iniciar sesion en el sistema.
 | --- | --- | --- |
 | `id` | `INT` | Llave primaria, autoincremental |
 | `nombre` | `VARCHAR(100)` | Opcional |
-| `email` | `VARCHAR(100)` | No nulo, unico |
-| `password` | `VARCHAR(200)` | No nulo |
-| `rol` | `VARCHAR(50)` | No nulo, valor por defecto: `cliente` |
+| `email` | `VARCHAR(254)` | No nulo, unico, no vacio |
+| `password` | `VARCHAR(255)` | No nulo |
+| `rol` | `ENUM('admin', 'cliente')` | No nulo, valor por defecto: `cliente` |
 | `activo` | `BOOLEAN` | No nulo, valor por defecto: `true` |
 | `telefono` | `VARCHAR(30)` | Opcional |
 | `cargo` | `VARCHAR(100)` | Opcional |
@@ -231,15 +233,15 @@ Guarda los tickets creados por los usuarios.
 | `reportado_por` | `VARCHAR(100)` | Opcional |
 | `area` | `VARCHAR(100)` | No nulo |
 | `departamento` | `VARCHAR(100)` | No nulo |
-| `prioridad` | `VARCHAR(50)` | No nulo, valor por defecto: `media` |
+| `prioridad` | `ENUM('baja', 'media', 'alta', 'critica')` | No nulo, valor por defecto: `media` |
 | `usuario_id` | `INT` | No nulo, llave foranea hacia `usuario.id` |
 | `asignado_a_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
-| `estado` | `VARCHAR(50)` | No nulo, valor por defecto: `pendiente` |
-| `solucion_cierre` | `TEXT` | Opcional, requerida al cerrar como `resuelto` |
-| `cerrado_por_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
+| `estado` | `ENUM('pendiente', 'proceso', 'resuelto')` | No nulo, valor por defecto: `pendiente` |
+| `solucion_cierre` | `TEXT` | Opcional; obligatoria si `estado` es `resuelto` |
+| `cerrado_por_id` | `INT` | Opcional; obligatorio si `estado` es `resuelto` |
 | `creado_en` | `DATETIME` | No nulo, valor por defecto: fecha actual |
 | `actualizado_en` | `DATETIME` | No nulo, se actualiza automaticamente |
-| `cerrado_en` | `DATETIME` | Opcional, fecha de resolucion |
+| `cerrado_en` | `DATETIME` | Opcional; obligatoria si `estado` es `resuelto` |
 
 ### Tabla `ticket_historial`
 
@@ -250,7 +252,7 @@ Guarda la trazabilidad de acciones realizadas sobre cada ticket.
 | `id` | `INT` | Llave primaria, autoincremental |
 | `ticket_id` | `INT` | Opcional, llave foranea hacia `ticket.id` |
 | `usuario_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
-| `accion` | `VARCHAR(50)` | No nulo. Valores: `creado`, `actualizado`, `eliminado` |
+| `accion` | `ENUM('creado', 'actualizado', 'eliminado')` | No nulo |
 | `campo` | `VARCHAR(100)` | Opcional, campo modificado |
 | `valor_anterior` | `TEXT` | Opcional |
 | `valor_nuevo` | `TEXT` | Opcional |
@@ -264,9 +266,9 @@ Guarda invitaciones para registrar nuevos usuarios.
 | Campo | Tipo | Restricciones |
 | --- | --- | --- |
 | `id` | `INT` | Llave primaria, autoincremental |
-| `email` | `VARCHAR(100)` | No nulo |
-| `rol` | `VARCHAR(50)` | No nulo, valor por defecto: `cliente` |
-| `token` | `VARCHAR(120)` | No nulo, unico |
+| `email` | `VARCHAR(254)` | No nulo, no vacio |
+| `rol` | `ENUM('admin', 'cliente')` | No nulo, valor por defecto: `cliente` |
+| `token` | `VARCHAR(128)` | No nulo, unico |
 | `usada` | `BOOLEAN` | No nulo, valor por defecto: `false` |
 | `invitado_por_id` | `INT` | Opcional, llave foranea hacia `usuario.id` |
 | `creada_en` | `DATETIME` | No nulo |

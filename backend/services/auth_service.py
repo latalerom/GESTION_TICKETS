@@ -10,6 +10,11 @@ from services.ticket_event_broker import ticket_event_broker
 
 class AuthService:
     PROFILE_FIELDS = ("nombre", "telefono", "cargo", "bio", "foto_perfil")
+    PROFILE_MAX_LENGTHS = {
+        "nombre": 100,
+        "telefono": 30,
+        "cargo": 100,
+    }
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -18,6 +23,7 @@ class AuthService:
         if not email or not password:
             return None
 
+        email = self.normalize_email(email)
         user = Usuario.query.filter_by(email=email).first()
 
         if user is None or not user.activo:
@@ -52,7 +58,9 @@ class AuthService:
         # Solo se aceptan campos de perfil; rol, correo y estado activo quedan protegidos.
         for field in self.PROFILE_FIELDS:
             if field in data:
-                setattr(user, field, data.get(field))
+                value = self.clean_text(data.get(field))
+                self.validate_profile_length(field, value)
+                setattr(user, field, value)
 
         return user
 
@@ -90,3 +98,18 @@ class AuthService:
 
     def generate_temporary_password(self):
         return f"Soporte-{token_urlsafe(9)}"
+
+    def normalize_email(self, value):
+        return str(value).strip().lower()
+
+    def clean_text(self, value):
+        if value is None:
+            return None
+
+        return str(value).strip()
+
+    def validate_profile_length(self, field, value):
+        max_length = self.PROFILE_MAX_LENGTHS.get(field)
+
+        if max_length is not None and value is not None and len(value) > max_length:
+            raise ValueError(f"{field} no puede superar {max_length} caracteres")
