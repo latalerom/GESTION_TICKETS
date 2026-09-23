@@ -1,6 +1,8 @@
 const userInfo = document.querySelector("#user-info");
 const appBody = document.querySelector(".app-body");
 const sidebarToggle = document.querySelector("#sidebar-toggle");
+const mobileMenuButton = document.querySelector("#mobile-menu-button");
+const mobileMenuOverlay = document.querySelector("#mobile-menu-overlay");
 const sessionPhotoPreview = document.querySelector("#session-photo-preview");
 const sessionAvatar = document.querySelector("#session-avatar");
 const sessionName = document.querySelector("#session-name");
@@ -62,6 +64,11 @@ let ticketEvents = null;
 let activityItems = [];
 let ticketsCache = [];
 let usersCache = [];
+const mobileMenuQuery = window.matchMedia("(max-width: 1100px)");
+
+function isMobileLayout() {
+    return mobileMenuQuery.matches;
+}
 
 function setSidebarCollapsed(collapsed) {
     appBody?.classList.toggle("sidebar-collapsed", collapsed);
@@ -71,6 +78,42 @@ function setSidebarCollapsed(collapsed) {
         sidebarToggle.setAttribute("aria-label", collapsed ? "Expandir menu" : "Contraer menu");
         sidebarToggle.querySelector("span").textContent = collapsed ? ">" : "<";
     }
+
+    if (mobileMenuButton) {
+        mobileMenuButton.setAttribute("aria-expanded", String(!collapsed));
+        mobileMenuButton.setAttribute("aria-label", collapsed ? "Abrir menu" : "Cerrar menu");
+        mobileMenuButton.querySelector("span").textContent = collapsed ? "☰" : "×";
+    }
+
+    mobileMenuOverlay?.classList.toggle("hidden", collapsed || !isMobileLayout());
+    document.body.classList.toggle("mobile-menu-open", !collapsed && isMobileLayout());
+}
+
+function toggleSidebar() {
+    const collapsed = !appBody.classList.contains("sidebar-collapsed");
+    setSidebarCollapsed(collapsed);
+
+    if (!isMobileLayout()) {
+        localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
+    }
+}
+
+function syncSidebarForViewport() {
+    if (isMobileLayout()) {
+        setSidebarCollapsed(true);
+        return;
+    }
+
+    setSidebarCollapsed(localStorage.getItem("sidebarCollapsed") === "true");
+}
+
+function closeMobileMenu() {
+    appBody?.classList.add("sidebar-collapsed");
+    document.body.classList.remove("mobile-menu-open");
+    mobileMenuOverlay?.classList.add("hidden");
+    mobileMenuButton?.setAttribute("aria-expanded", "false");
+    mobileMenuButton?.setAttribute("aria-label", "Abrir menu");
+
 }
 
 function showMessage(text, type = "info") {
@@ -689,6 +732,10 @@ function showView(viewName) {
     document.querySelectorAll(".nav-item").forEach((item) => {
         item.classList.toggle("active", item.dataset.view === viewName);
     });
+
+    if (isMobileLayout()) {
+        closeMobileMenu();
+    }
 }
 
 async function loadSession() {
@@ -820,11 +867,14 @@ reloadUsersButton?.addEventListener("click", loadUsers);
 tipoTicket.addEventListener("change", updateIncidentOtherField);
 ticketSearch?.addEventListener("input", renderFilteredTickets);
 reportSearch?.addEventListener("input", renderFilteredReports);
-sidebarToggle?.addEventListener("click", () => {
-    const collapsed = !appBody.classList.contains("sidebar-collapsed");
-    setSidebarCollapsed(collapsed);
-    localStorage.setItem("sidebarCollapsed", collapsed ? "true" : "false");
-});
+sidebarToggle?.addEventListener("click", toggleSidebar);
+mobileMenuButton?.addEventListener("click", toggleSidebar);
+mobileMenuOverlay?.addEventListener("click", closeMobileMenu);
+if (typeof mobileMenuQuery.addEventListener === "function") {
+    mobileMenuQuery.addEventListener("change", syncSidebarForViewport);
+} else {
+    mobileMenuQuery.addListener(syncSidebarForViewport);
+}
 
 inviteForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1050,7 +1100,7 @@ profileForm.addEventListener("submit", async (event) => {
 });
 
 async function initDashboard() {
-    setSidebarCollapsed(localStorage.getItem("sidebarCollapsed") === "true");
+    syncSidebarForViewport();
     renderDepartmentTree();
     await loadSession();
     await loadTickets();

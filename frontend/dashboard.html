@@ -8,7 +8,17 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="app-body">
-    <aside class="sidebar">
+    <button id="mobile-menu-button" class="mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="app-sidebar">
+        <span class="hamburger-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
+
+    <button id="mobile-menu-overlay" class="mobile-menu-overlay hidden" type="button" aria-label="Cerrar menu"></button>
+
+    <aside id="app-sidebar" class="sidebar">
         <div class="brand-block">
             <img class="brand-logo" src="image/favicon_logo.png" alt="TicketFlow">
             <div class="brand-copy">

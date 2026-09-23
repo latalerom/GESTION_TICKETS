@@ -391,6 +391,7 @@ const ui = {
         const normalized = ["light", "dark", "system"].includes(theme) ? theme : "system";
         document.documentElement.dataset.theme = normalized;
         localStorage.setItem(this.themeKey, normalized);
+        this.syncThemeControl(normalized);
     },
 
     renderThemeControl(theme) {
@@ -398,22 +399,59 @@ const ui = {
             return;
         }
 
-        const control = document.createElement("label");
+        const control = document.createElement("div");
         control.className = "theme-control";
+        control.setAttribute("aria-label", "Tema visual");
         control.innerHTML = `
             <span class="sr-only">Tema visual</span>
-            <select aria-label="Tema visual">
-                <option value="system">Automatico</option>
-                <option value="light">Claro</option>
-                <option value="dark">Oscuro</option>
-            </select>
+            <button type="button" data-theme-option="light" aria-label="Tema claro" title="Tema claro">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 2v2"></path>
+                    <path d="M12 20v2"></path>
+                    <path d="M4 12H2"></path>
+                    <path d="M22 12h-2"></path>
+                    <path d="m4.9 4.9 1.4 1.4"></path>
+                    <path d="m17.7 17.7 1.4 1.4"></path>
+                    <path d="m19.1 4.9-1.4 1.4"></path>
+                    <path d="m6.3 17.7-1.4 1.4"></path>
+                </svg>
+            </button>
+            <button type="button" data-theme-option="dark" aria-label="Tema oscuro" title="Tema oscuro">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.5 14.8A8.2 8.2 0 0 1 9.2 3.5 8.7 8.7 0 1 0 20.5 14.8Z"></path>
+                </svg>
+            </button>
+            <button type="button" data-theme-option="system" aria-label="Tema automatico" title="Tema automatico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 5h16v10H4Z"></path>
+                    <path d="M9 19h6"></path>
+                    <path d="M12 15v4"></path>
+                    <path d="m8 9 2 2 4-4 2 2"></path>
+                </svg>
+            </button>
         `;
 
-        const select = control.querySelector("select");
-        select.value = theme;
-        select.addEventListener("change", () => this.applyTheme(select.value));
+        control.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-theme-option]");
+
+            if (!button) {
+                return;
+            }
+
+            this.applyTheme(button.dataset.themeOption);
+        });
 
         document.body.appendChild(control);
+        this.syncThemeControl(theme);
+    },
+
+    syncThemeControl(theme) {
+        document.querySelectorAll("[data-theme-option]").forEach((button) => {
+            const active = button.dataset.themeOption === theme;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", String(active));
+        });
     },
 
     initCookieNotice() {
