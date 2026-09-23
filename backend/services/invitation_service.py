@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import re
 from secrets import token_urlsafe
 
 from flask import current_app
@@ -12,6 +13,7 @@ from services.ticket_event_broker import ticket_event_broker
 class InvitationService:
     VALID_ROLES = {"admin", "cliente"}
     EMAIL_MAX_LENGTH = 254
+    EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -72,7 +74,17 @@ class InvitationService:
 
         return invitation
 
-    def register_user(self, token, nombre, password, telefono=None, cargo=None, bio=None):
+    def register_user(
+        self,
+        token,
+        nombre,
+        password,
+        telefono=None,
+        cargo=None,
+        bio=None,
+        privacy_accepted=False,
+        terms_accepted=False,
+    ):
         invitation = self.get_invitation(token)
 
         if invitation is None:
@@ -86,9 +98,14 @@ class InvitationService:
         if not nombre or not password:
             raise ValueError("Nombre y contrasena son obligatorios")
 
+        if privacy_accepted is not True or terms_accepted is not True:
+            raise ValueError("Debes aceptar la politica de privacidad y los terminos de uso")
+
         self.validate_length("nombre", nombre, 100)
         self.validate_length("telefono", telefono, 30)
         self.validate_length("cargo", cargo, 100)
+        self.validate_length("bio", bio, 1000)
+        self.validate_password(password)
 
         existing_user = Usuario.query.filter_by(email=invitation.email).first()
         if existing_user is not None:
@@ -133,9 +150,18 @@ class InvitationService:
         if len(email) > self.EMAIL_MAX_LENGTH:
             raise ValueError(f"El correo no puede superar {self.EMAIL_MAX_LENGTH} caracteres")
 
-        if "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+        if not self.EMAIL_RE.match(email):
             raise ValueError("Correo invalido")
 
     def validate_length(self, field, value, max_length):
         if value is not None and len(value) > max_length:
             raise ValueError(f"{field} no puede superar {max_length} caracteres")
+
+    def validate_password(self, password):
+        password = str(password)
+
+        if len(password) < 8:
+            raise ValueError("La contrasena debe tener al menos 8 caracteres")
+
+        if not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
+            raise ValueError("La contrasena debe incluir letras y numeros")

@@ -218,7 +218,11 @@ class AuthController:
             return jsonify({"error": "Debes iniciar sesion"}), 401
 
         try:
-            target_user, sent, temporary_password = self.auth_service.reset_password(user, user_id)
+            target_user, sent = self.auth_service.reset_password(user, user_id)
+            if not sent:
+                db.session.rollback()
+                return jsonify({"error": "No se pudo enviar la contrasena temporal. Configura el correo antes de restablecer accesos."}), 503
+
             db.session.commit()
         except PermissionError as exc:
             return jsonify({"error": str(exc)}), 403
@@ -230,7 +234,6 @@ class AuthController:
             "message": "Contrasena restablecida correctamente",
             "user": self.user_summary(target_user),
             "email_sent": sent,
-            "temporary_password": temporary_password,
         })
 
     def create_invitation(self):
@@ -271,7 +274,7 @@ class AuthController:
         data = request.get_json(silent=True) or {}
 
         try:
-            invitation, link, sent, email_error = self.invitation_service.create_invitation(
+            invitation, link, sent, _email_error = self.invitation_service.create_invitation(
                 email=data.get("email"),
                 rol=data.get("rol", "cliente"),
                 invited_by=user,
@@ -287,7 +290,6 @@ class AuthController:
             "invitation": invitation.to_dict(),
             "registration_link": link,
             "email_sent": sent,
-            "email_error": email_error,
         }), 201
 
     def get_invitation(self, token):
@@ -360,6 +362,8 @@ class AuthController:
                 telefono=data.get("telefono"),
                 cargo=data.get("cargo"),
                 bio=data.get("bio"),
+                privacy_accepted=data.get("privacy_accepted"),
+                terms_accepted=data.get("terms_accepted"),
             )
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400

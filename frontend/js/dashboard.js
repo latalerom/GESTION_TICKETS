@@ -836,7 +836,7 @@ inviteForm.addEventListener("submit", async (event) => {
         await loadUsers();
         const emailStatus = result.email_sent
             ? "Invitacion enviada correctamente."
-            : `Invitacion creada, pero el correo no se pudo enviar${result.email_error ? `: ${result.email_error}` : ""}. Comparte el enlace manualmente.`;
+            : "Invitacion creada, pero el correo no se pudo enviar. Comparte el enlace manualmente.";
 
         showInviteMessage(
             emailStatus,
@@ -995,7 +995,7 @@ usersBody?.addEventListener("click", async (event) => {
         showMessage(
             result.email_sent
                 ? "Contrasena temporal enviada por correo."
-                : `Contrasena temporal: ${result.temporary_password}. Configura SMTP para enviarla por correo.`,
+                : "No se pudo enviar la contrasena temporal. Configura SMTP antes de restablecer accesos.",
             result.email_sent ? "success" : "warning",
         );
     } catch (error) {

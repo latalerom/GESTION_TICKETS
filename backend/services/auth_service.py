@@ -1,4 +1,5 @@
 from secrets import token_urlsafe
+import re
 
 from models import Usuario
 from werkzeug.security import check_password_hash
@@ -14,7 +15,10 @@ class AuthService:
         "nombre": 100,
         "telefono": 30,
         "cargo": 100,
+        "bio": 1000,
+        "foto_perfil": 1300000,
     }
+    IMAGE_DATA_RE = re.compile(r"^data:image/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$")
 
     def __init__(self, mail_service=None):
         self.mail_service = mail_service or MailService()
@@ -86,6 +90,9 @@ class AuthService:
         user.password = generate_password_hash(temporary_password)
         sent = self.mail_service.send_password_reset(user.email, temporary_password)
 
+        if not sent:
+            return user, False
+
         ticket_event_broker.publish("activity", {
             "action": "user_password_reset",
             "message": f"{current_user.nombre} restablecio la contrasena de {user.email}",
@@ -94,7 +101,7 @@ class AuthService:
             "visibility": "admins",
         })
 
-        return user, sent, temporary_password
+        return user, sent
 
     def generate_temporary_password(self):
         return f"Soporte-{token_urlsafe(9)}"
@@ -113,3 +120,6 @@ class AuthService:
 
         if max_length is not None and value is not None and len(value) > max_length:
             raise ValueError(f"{field} no puede superar {max_length} caracteres")
+
+        if field == "foto_perfil" and value is not None and not self.IMAGE_DATA_RE.match(value):
+            raise ValueError("La foto de perfil debe ser una imagen valida")

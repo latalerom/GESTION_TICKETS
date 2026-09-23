@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from flask import Flask, send_from_directory
+import logging
+
+from flask import Flask, jsonify, send_from_directory
 
 from config import Config
 from controllers.auth_controller import auth_bp
@@ -26,6 +28,7 @@ class ApplicationFactory:
         SwaggerConfig.init_app(app)
 
         self.register_blueprints(app)
+        self.register_error_handlers(app)
         self.register_frontend_routes(app)
         self.initialize_database(app)
 
@@ -34,6 +37,16 @@ class ApplicationFactory:
     def register_blueprints(self, app):
         app.register_blueprint(auth_bp)
         app.register_blueprint(ticket_bp)
+
+    def register_error_handlers(self, app):
+        @app.errorhandler(404)
+        def not_found(error):
+            return jsonify({"error": "Recurso no encontrado"}), 404
+
+        @app.errorhandler(500)
+        def internal_error(error):
+            app.logger.exception("Error interno no controlado")
+            return jsonify({"error": "Ocurrio un error inesperado"}), 500
 
     def register_frontend_routes(self, app):
         @app.route("/")
@@ -59,4 +72,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    logging.basicConfig(level=logging.INFO)
+    app.run(host="0.0.0.0", port=5000, debug=app.config["DEBUG"])

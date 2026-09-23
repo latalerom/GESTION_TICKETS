@@ -10,10 +10,13 @@ class TicketService:
     VALID_PRIORIDADES = {"baja", "media", "alta", "critica"}
     MAX_LENGTHS = {
         "titulo": 200,
+        "descripcion": 4000,
         "tipo_ticket": 100,
         "reportado_por": 100,
         "area": 100,
         "departamento": 100,
+        "observacion": 2000,
+        "solucion_cierre": 2000,
     }
 
     def __init__(self, mail_service=None):
@@ -72,10 +75,12 @@ class TicketService:
 
         self.validate_lengths({
             "titulo": titulo,
+            "descripcion": descripcion,
             "tipo_ticket": tipo_ticket,
             "reportado_por": reportado_por,
             "area": area,
             "departamento": departamento,
+            "observacion": observacion,
         })
 
         ticket = Ticket(
@@ -149,10 +154,12 @@ class TicketService:
         if descripcion is not None:
             if not descripcion:
                 raise ValueError("La descripcion no puede quedar vacia")
+            self.validate_lengths({"descripcion": descripcion})
             self.track_change(changes, "descripcion", ticket.descripcion, descripcion)
             ticket.descripcion = descripcion
 
         if observacion is not None:
+            self.validate_lengths({"observacion": observacion})
             self.track_change(changes, "observacion", ticket.observacion, observacion)
             ticket.observacion = observacion
 
@@ -186,6 +193,11 @@ class TicketService:
             if not user.is_admin():
                 raise PermissionError("Solo un administrador puede asignar responsables")
 
+            try:
+                asignado_a_id = int(asignado_a_id)
+            except (TypeError, ValueError):
+                raise ValueError("Responsable invalido")
+
             assignee = Usuario.query.get(asignado_a_id)
             if assignee is None or not assignee.activo:
                 raise ValueError("Responsable invalido")
@@ -203,6 +215,7 @@ class TicketService:
             if estado == "resuelto" and not solucion_cierre:
                 raise ValueError("Debes escribir como termino el caso y que solucion se dio")
 
+            self.validate_lengths({"solucion_cierre": solucion_cierre})
             self.track_change(changes, "estado", ticket.estado, estado)
             ticket.estado = estado
             closed_at = datetime.utcnow() if estado == "resuelto" else None
@@ -305,7 +318,6 @@ class TicketService:
         )
         payload["visibility"] = "admins"
         payload["email_sent"] = sent
-        payload["email_error"] = self.mail_service.last_error
         ticket_event_broker.publish("activity", payload)
 
     def track_change(self, changes, field, previous_value, new_value):

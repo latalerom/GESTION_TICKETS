@@ -137,7 +137,7 @@ class SchemaService:
             "chk_ticket_estado": "estado IN ('pendiente', 'proceso', 'resuelto')",
             "chk_ticket_prioridad": "prioridad IN ('baja', 'media', 'alta', 'critica')",
             "chk_ticket_resuelto_con_cierre": (
-                "estado <> 'resuelto' OR (cerrado_en IS NOT NULL AND cerrado_por_id IS NOT NULL "
+                "estado <> 'resuelto' OR (cerrado_en IS NOT NULL "
                 "AND solucion_cierre IS NOT NULL AND TRIM(solucion_cierre) <> '')"
             ),
         },

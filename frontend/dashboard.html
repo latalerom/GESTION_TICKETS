@@ -123,7 +123,7 @@
 
                         <div class="form-section">
                             <label for="reportado-por">Persona que reporta</label>
-                            <input id="reportado-por" name="reportado_por" type="text" required>
+                            <input id="reportado-por" name="reportado_por" type="text" maxlength="100" required>
 
                             <label for="area">Area</label>
                             <select id="area" name="area" required>
@@ -149,11 +149,16 @@
 
                             <div id="incident-other-field" class="hidden">
                                 <label for="incidente-otro">Otro incidente</label>
-                                <input id="incidente-otro" name="incidente_otro" type="text" placeholder="Especifica cual es el incidente">
+                                <input id="incidente-otro" name="incidente_otro" type="text" maxlength="2000" placeholder="Especifica cual es el incidente">
                             </div>
 
                             <label for="descripcion">Descripcion del caso</label>
-                            <textarea id="descripcion" name="descripcion" rows="4" placeholder="Resume que ocurre, desde cuando pasa y que necesita el usuario." required></textarea>
+                            <textarea id="descripcion" name="descripcion" rows="4" maxlength="4000" placeholder="Resume que ocurre, desde cuando pasa y que necesita el usuario." required></textarea>
+
+                            <label class="check-row" for="ticket-consent">
+                                <input id="ticket-consent" name="ticket_consent" type="checkbox" required>
+                                <span>Confirmo que registre solo datos necesarios para atender este caso.</span>
+                            </label>
 
                             <div class="actions">
                                 <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
@@ -232,6 +237,11 @@
                             <option value="admin">Administrador</option>
                         </select>
 
+                        <label class="check-row" for="invite-consent">
+                            <input id="invite-consent" name="invite_consent" type="checkbox" required>
+                            <span>Confirmo que tengo autorizacion para invitar este correo.</span>
+                        </label>
+
                         <button class="button primary full" type="submit">Enviar invitacion</button>
                     </form>
                     <p id="invite-link" class="invite-link muted"></p>
@@ -299,17 +309,22 @@
 
                         <div class="profile-fields">
                             <label for="profile-nombre">Nombre</label>
-                            <input id="profile-nombre" name="nombre" type="text" autocomplete="name">
+                            <input id="profile-nombre" name="nombre" type="text" autocomplete="name" maxlength="100">
 
                             <label for="profile-phone">Telefono</label>
-                            <input id="profile-phone" name="telefono" type="tel" autocomplete="tel">
+                            <input id="profile-phone" name="telefono" type="tel" autocomplete="tel" maxlength="30">
 
                             <label for="profile-cargo">Cargo o area</label>
-                            <input id="profile-cargo" name="cargo" type="text">
+                            <input id="profile-cargo" name="cargo" type="text" maxlength="100">
 
                             <label for="profile-bio">Informacion adicional</label>
-                            <textarea id="profile-bio" name="bio" rows="4"></textarea>
+                            <textarea id="profile-bio" name="bio" rows="4" maxlength="1000"></textarea>
                         </div>
+
+                        <label class="check-row" for="profile-consent">
+                            <input id="profile-consent" name="profile_consent" type="checkbox" required>
+                            <span>Confirmo que estos datos son correctos y necesarios para mi perfil.</span>
+                        </label>
 
                         <button class="button primary" type="submit">Guardar perfil</button>
                     </div>

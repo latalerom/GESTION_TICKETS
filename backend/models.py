@@ -63,7 +63,7 @@ class Ticket(db.Model):
         CheckConstraint("estado IN ('pendiente', 'proceso', 'resuelto')", name="chk_ticket_estado"),
         CheckConstraint("prioridad IN ('baja', 'media', 'alta', 'critica')", name="chk_ticket_prioridad"),
         CheckConstraint(
-            "estado <> 'resuelto' OR (cerrado_en IS NOT NULL AND cerrado_por_id IS NOT NULL AND solucion_cierre IS NOT NULL AND TRIM(solucion_cierre) <> '')",
+            "estado <> 'resuelto' OR (cerrado_en IS NOT NULL AND solucion_cierre IS NOT NULL AND TRIM(solucion_cierre) <> '')",
             name="chk_ticket_resuelto_con_cierre",
         ),
     )

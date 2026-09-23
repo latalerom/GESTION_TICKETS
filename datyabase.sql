@@ -82,7 +82,6 @@ CREATE TABLE IF NOT EXISTS ticket (
     estado <> 'resuelto'
     OR (
       cerrado_en IS NOT NULL
-      AND cerrado_por_id IS NOT NULL
       AND solucion_cierre IS NOT NULL
       AND TRIM(solucion_cierre) <> ''
     )

@@ -1,6 +1,8 @@
 const ui = {
     toastRoot: null,
     dialog: null,
+    themeKey: "ticketflowTheme",
+    cookieNoticeKey: "ticketflowCookieNoticeAccepted",
 
     ensureToastRoot() {
         if (this.toastRoot) {
@@ -134,6 +136,8 @@ const ui = {
                 }
             });
 
+            this.bindDialogKeyboard(overlay, close, false);
+
             document.body.appendChild(overlay);
 
             overlay
@@ -239,11 +243,7 @@ const ui = {
                 }
             });
 
-            overlay.addEventListener("keydown", (event) => {
-                if (event.key === "Escape") {
-                    close(null);
-                }
-            });
+            this.bindDialogKeyboard(overlay, close, null);
 
             document.body.appendChild(overlay);
 
@@ -348,6 +348,97 @@ const ui = {
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#039;");
     },
+
+    bindDialogKeyboard(overlay, close, cancelResult = false) {
+        overlay.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                close(cancelResult);
+                return;
+            }
+
+            if (event.key !== "Tab") {
+                return;
+            }
+
+            const focusable = [...overlay.querySelectorAll(
+                "a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex='-1'])"
+            )].filter((element) => element.offsetParent !== null);
+
+            if (focusable.length === 0) {
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+    },
+
+    initTheme() {
+        const savedTheme = localStorage.getItem(this.themeKey) || "system";
+        this.applyTheme(savedTheme);
+        this.renderThemeControl(savedTheme);
+    },
+
+    applyTheme(theme) {
+        const normalized = ["light", "dark", "system"].includes(theme) ? theme : "system";
+        document.documentElement.dataset.theme = normalized;
+        localStorage.setItem(this.themeKey, normalized);
+    },
+
+    renderThemeControl(theme) {
+        if (document.querySelector(".theme-control")) {
+            return;
+        }
+
+        const control = document.createElement("label");
+        control.className = "theme-control";
+        control.innerHTML = `
+            <span class="sr-only">Tema visual</span>
+            <select aria-label="Tema visual">
+                <option value="system">Automatico</option>
+                <option value="light">Claro</option>
+                <option value="dark">Oscuro</option>
+            </select>
+        `;
+
+        const select = control.querySelector("select");
+        select.value = theme;
+        select.addEventListener("change", () => this.applyTheme(select.value));
+
+        document.body.appendChild(control);
+    },
+
+    initCookieNotice() {
+        if (localStorage.getItem(this.cookieNoticeKey) === "true") {
+            return;
+        }
+
+        const notice = document.createElement("section");
+        notice.className = "cookie-notice";
+        notice.setAttribute("aria-label", "Aviso de cookies");
+        notice.innerHTML = `
+            <p>Usamos cookie de sesion necesaria y preferencias locales. No usamos cookies de publicidad.</p>
+            <div>
+                <a href="cookies.html">Ver politica</a>
+                <button class="button primary" type="button">Entendido</button>
+            </div>
+        `;
+
+        notice.querySelector("button").addEventListener("click", () => {
+            localStorage.setItem(this.cookieNoticeKey, "true");
+            notice.remove();
+        });
+
+        document.body.appendChild(notice);
+    },
 };
 
 
@@ -356,4 +447,6 @@ const ui = {
  */
 document.addEventListener("DOMContentLoaded", () => {
     ui.setupPasswordToggles();
+    ui.initTheme();
+    ui.initCookieNotice();
 });

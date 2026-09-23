@@ -11,7 +11,11 @@ class Config:
         f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.environ.get("SECRET_KEY", "secret123")
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-this-secret")
+    DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
     APP_URL = os.environ.get("APP_URL", "http://localhost:5001")
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))

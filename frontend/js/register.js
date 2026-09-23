@@ -33,6 +33,8 @@ form.addEventListener("submit", async (event) => {
             telefono: formData.get("telefono"),
             cargo: formData.get("cargo"),
             bio: formData.get("bio"),
+            privacy_accepted: formData.get("privacy_accepted") === "on",
+            terms_accepted: formData.get("terms_accepted") === "on",
         });
         showMessage("Cuenta creada correctamente. Redirigiendo...", "success");
         window.setTimeout(() => {

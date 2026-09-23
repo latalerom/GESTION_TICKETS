@@ -32,7 +32,7 @@ class SwaggerConfig:
                     },
                     "password": {
                         "type": "string",
-                        "example": "1234",
+                        "example": "SoporteDemo2026",
                     },
                 },
             },
@@ -178,11 +178,13 @@ class SwaggerConfig:
             },
             "RegisterRequest": {
                 "type": "object",
-                "required": ["token", "nombre", "password"],
+                "required": ["token", "nombre", "password", "privacy_accepted", "terms_accepted"],
                 "properties": {
                     "token": {"type": "string", "example": "token-de-invitacion"},
                     "nombre": {"type": "string", "example": "Nuevo Usuario"},
-                    "password": {"type": "string", "example": "1234"},
+                    "password": {"type": "string", "example": "SoporteDemo2026"},
+                    "privacy_accepted": {"type": "boolean", "example": True},
+                    "terms_accepted": {"type": "boolean", "example": True},
                 },
             },
         },
