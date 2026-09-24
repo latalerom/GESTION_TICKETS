@@ -74,6 +74,7 @@ const ui = {
         danger = false,
     }) {
         return new Promise((resolve) => {
+            const trigger = document.activeElement;
             const overlay = document.createElement("div");
             overlay.className = "dialog-overlay";
 
@@ -117,6 +118,7 @@ const ui = {
 
                 window.setTimeout(() => {
                     overlay.remove();
+                    trigger?.focus?.();
                 }, 160);
 
                 resolve(result);
@@ -156,6 +158,7 @@ const ui = {
         required = true,
     }) {
         return new Promise((resolve) => {
+            const trigger = document.activeElement;
             const overlay = document.createElement("div");
             overlay.className = "dialog-overlay";
 
@@ -216,6 +219,7 @@ const ui = {
 
                 window.setTimeout(() => {
                     overlay.remove();
+                    trigger?.focus?.();
                 }, 160);
 
                 resolve(result);

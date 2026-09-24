@@ -82,7 +82,11 @@ class TicketController:
 
         listener = ticket_event_broker.subscribe()
         response = Response(
-            ticket_event_broker.stream(listener, user.to_dict()),
+            ticket_event_broker.stream(
+                listener,
+                user.to_dict(),
+                lambda: self.auth_service.get_user_by_id(user.id) is not None,
+            ),
             mimetype="text/event-stream",
         )
         response.headers["Cache-Control"] = "no-cache"

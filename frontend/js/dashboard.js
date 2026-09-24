@@ -85,6 +85,10 @@ function setSidebarCollapsed(collapsed) {
         mobileMenuButton.querySelector("span").textContent = collapsed ? "☰" : "×";
     }
 
+    if (mobileMenuButton && !mobileMenuButton.querySelector(".hamburger-icon")) {
+        mobileMenuButton.innerHTML = "<span class=\"hamburger-icon\" aria-hidden=\"true\"><span></span><span></span><span></span></span>";
+    }
+
     mobileMenuOverlay?.classList.toggle("hidden", collapsed || !isMobileLayout());
     document.body.classList.toggle("mobile-menu-open", !collapsed && isMobileLayout());
 }
@@ -307,13 +311,13 @@ function renderTickets(tickets, emptyMessage = "No hay tickets registrados.") {
 
     ticketsBody.innerHTML = tickets.map((ticket) => `
         <tr>
-            <td><strong>#${ticket.id}</strong></td>
-            <td>${escapeHtml(ticket.tipo_ticket || "General")}</td>
-            <td>${escapeHtml(ticket.departamento || "-")}<br><span class="muted">${escapeHtml(ticket.area || "-")}</span></td>
-            ${currentUser?.rol === "admin" ? `<td>${escapeHtml(ticket.reportado_por || ticket.usuario || "Sin usuario")}</td>` : ""}
-            <td>${priorityBadge(ticket.prioridad)}</td>
-            <td>${stateBadge(ticket.estado)}</td>
-            <td>${ticketActions(ticket)}</td>
+            <td data-label="Caso"><strong>#${ticket.id}</strong></td>
+            <td data-label="Tipo">${escapeHtml(ticket.tipo_ticket || "General")}</td>
+            <td data-label="Area">${escapeHtml(ticket.departamento || "-")}<br><span class="muted">${escapeHtml(ticket.area || "-")}</span></td>
+            ${currentUser?.rol === "admin" ? `<td data-label="Reportado por">${escapeHtml(ticket.reportado_por || ticket.usuario || "Sin usuario")}</td>` : ""}
+            <td data-label="Prioridad">${priorityBadge(ticket.prioridad)}</td>
+            <td data-label="Estado">${stateBadge(ticket.estado)}</td>
+            <td data-label="Acciones">${ticketActions(ticket)}</td>
         </tr>
     `).join("");
 }
@@ -414,22 +418,22 @@ function renderReports(tickets, emptyMessage = "No hay reportes disponibles.") {
 
         return `
             <tr class="report-row status-${ticket.estado || "pendiente"} priority-${ticket.prioridad || "media"} ${locked ? "is-locked" : ""}">
-                <td>
+                <td data-label="Caso">
                     <strong>#${ticket.id}</strong>
                     ${lockedText}
                 </td>
-                <td>
+                <td data-label="Tipo">
                     ${clippedText(ticket.tipo_ticket || "General")}
                 </td>
-                <td>${clippedText(ticket.area || "-")}</td>
-                <td>${clippedText(ticket.observacion || ticket.descripcion || "-")}</td>
-                <td>${clippedText(ticket.reportado_por || ticket.usuario || "-")}</td>
-                <td>
+                <td data-label="Area">${clippedText(ticket.area || "-")}</td>
+                <td data-label="Detalle">${clippedText(ticket.observacion || ticket.descripcion || "-")}</td>
+                <td data-label="Reportado por">${clippedText(ticket.reportado_por || ticket.usuario || "-")}</td>
+                <td data-label="Prioridad">
                     <div class="report-control">
                         ${priorityControl}
                     </div>
                 </td>
-                <td>
+                <td data-label="Estado">
                     <div class="report-control">
                         ${stateControl}
                     </div>
@@ -468,7 +472,7 @@ function renderUsers(users) {
 
         return `
             <tr>
-                <td>
+                <td data-label="Usuario">
                     <div class="user-cell">
                         ${avatar}
                         <div>
@@ -477,15 +481,18 @@ function renderUsers(users) {
                         </div>
                     </div>
                 </td>
-                <td>${roleBadge(user.rol)}</td>
-                <td>${activeBadge(user.activo)}</td>
-                <td>
+                <td data-label="Rol">${roleBadge(user.rol)}</td>
+                <td data-label="Estado">${activeBadge(user.activo)}</td>
+                <td data-label="Contacto">
                     ${escapeHtml(user.telefono || "-")}<br>
                     <span class="muted">${escapeHtml(user.cargo || "Sin cargo")}</span>
                 </td>
-                <td>
+                <td data-label="Acciones">
                     <button class="button secondary" type="button" data-user-action="reset-password" data-id="${user.id}" ${!user.activo ? "disabled" : ""}>
                         Restablecer
+                    </button>
+                    <button class="button ${user.activo ? "danger" : "secondary"}" type="button" data-user-action="toggle-access" data-id="${user.id}" ${isCurrentUser ? "disabled" : ""}>
+                        ${user.activo ? "Revocar acceso" : "Reactivar acceso"}
                     </button>
                     ${isCurrentUser ? `<span class="muted user-note">Tu cuenta</span>` : ""}
                 </td>
@@ -730,8 +737,16 @@ function showView(viewName) {
     });
 
     document.querySelectorAll(".nav-item").forEach((item) => {
-        item.classList.toggle("active", item.dataset.view === viewName);
+        const isActive = item.dataset.view === viewName;
+        item.classList.toggle("active", isActive);
+        item.setAttribute("aria-current", isActive ? "page" : "false");
     });
+
+    const heading = document.querySelector(`#view-${viewName} h2`);
+    if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: true });
+    }
 
     if (isMobileLayout()) {
         closeMobileMenu();
@@ -1015,7 +1030,7 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 });
 
 usersBody?.addEventListener("click", async (event) => {
-    const button = event.target.closest("button[data-user-action='reset-password']");
+    const button = event.target.closest("button[data-user-action]");
 
     if (!button) {
         return;
@@ -1024,6 +1039,35 @@ usersBody?.addEventListener("click", async (event) => {
     const user = usersCache.find((item) => item.id === Number(button.dataset.id));
 
     if (!user) {
+        return;
+    }
+
+    if (button.dataset.userAction === "toggle-access") {
+        const willActivate = !user.activo;
+        const confirmed = await ui.confirm({
+            title: willActivate ? "Reactivar acceso" : "Revocar acceso",
+            message: willActivate
+                ? `La cuenta de ${user.email} podra iniciar sesion nuevamente.`
+                : `La cuenta de ${user.email} dejara de poder iniciar sesion y usar el sistema. Sus tickets se conservaran.`,
+            confirmText: willActivate ? "Reactivar" : "Revocar acceso",
+            cancelText: "Cancelar",
+            danger: !willActivate,
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            button.disabled = true;
+            await api.setUserAccess(user.id, willActivate);
+            await loadUsers();
+            showMessage(willActivate ? "Acceso reactivado correctamente." : "Acceso revocado correctamente.", "success");
+        } catch (error) {
+            button.disabled = false;
+            showMessage(error.message, "error");
+        }
+
         return;
     }
 

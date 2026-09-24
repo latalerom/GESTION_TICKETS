@@ -19,6 +19,7 @@ class AuthController:
         self.blueprint.add_url_rule("/logout", view_func=self.logout, methods=["POST"])
         self.blueprint.add_url_rule("/profile", view_func=self.update_profile, methods=["PUT"])
         self.blueprint.add_url_rule("/users", view_func=self.list_users, methods=["GET"])
+        self.blueprint.add_url_rule("/users/<int:user_id>/access", view_func=self.update_user_access, methods=["PATCH"])
         self.blueprint.add_url_rule("/users/<int:user_id>/reset-password", view_func=self.reset_user_password, methods=["POST"])
         self.blueprint.add_url_rule("/invitations", view_func=self.create_invitation, methods=["POST"])
         self.blueprint.add_url_rule("/invitations/<token>", view_func=self.get_invitation, methods=["GET"])
@@ -234,6 +235,33 @@ class AuthController:
             "message": "Contrasena restablecida correctamente",
             "user": self.user_summary(target_user),
             "email_sent": sent,
+        })
+
+    def update_user_access(self, user_id):
+        user = self.current_user()
+
+        if user is None:
+            return jsonify({"error": "Debes iniciar sesion"}), 401
+
+        data = request.get_json(silent=True) or {}
+        active = data.get("activo")
+
+        if not isinstance(active, bool):
+            return jsonify({"error": "El campo activo debe ser booleano"}), 400
+
+        try:
+            target_user, changed = self.auth_service.set_user_active(user, user_id, active)
+            db.session.commit()
+        except PermissionError as exc:
+            return jsonify({"error": str(exc)}), 403
+        except ValueError as exc:
+            db.session.rollback()
+            return jsonify({"error": str(exc)}), 400
+
+        action = "reactivado" if active else "revocado"
+        return jsonify({
+            "message": f"Acceso {action} correctamente" if changed else "El acceso ya tenia ese estado",
+            "user": self.user_summary(target_user),
         })
 
     def create_invitation(self):

@@ -103,6 +103,38 @@ class AuthService:
 
         return user, sent
 
+    def set_user_active(self, current_user, user_id, active):
+        if current_user is None or not current_user.is_admin():
+            raise PermissionError("Solo administradores pueden cambiar el acceso de usuarios")
+
+        user = Usuario.query.get(user_id)
+
+        if user is None:
+            raise ValueError("Usuario no encontrado")
+
+        if user.id == current_user.id and not active:
+            raise ValueError("No puedes revocar tu propio acceso")
+
+        if not active and user.is_admin():
+            active_admins = Usuario.query.filter_by(rol="admin", activo=True).count()
+            if active_admins <= 1:
+                raise ValueError("Debe permanecer al menos un administrador activo")
+
+        if user.activo == active:
+            return user, False
+
+        user.activo = active
+        action = "reactivo" if active else "revoco el acceso de"
+        ticket_event_broker.publish("activity", {
+            "action": "user_access_updated",
+            "message": f"{current_user.nombre} {action} {user.email}",
+            "user": current_user.to_dict(),
+            "target_user": user.to_dict(),
+            "visibility": "admins",
+        })
+
+        return user, True
+
     def generate_temporary_password(self):
         return f"Soporte-{token_urlsafe(9)}"
 

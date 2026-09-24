@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="app-body">
-    <button id="mobile-menu-button" class="mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="app-sidebar">
+    <button id="mobile-menu-button" class="mobile-menu-button" type="button" aria-label="Abrir menu de navegacion" aria-expanded="false" aria-controls="app-sidebar">
         <span class="hamburger-icon" aria-hidden="true">
             <span></span>
             <span></span>
@@ -31,7 +31,7 @@
         </div>
 
         <nav class="sidebar-nav">
-            <button class="nav-item active" type="button" data-view="tickets" title="Tickets">
+            <button class="nav-item active" type="button" data-view="tickets" title="Tickets" aria-current="page">
                 <span class="nav-icon" aria-hidden="true">T</span>
                 <span class="nav-label">Tickets</span>
             </button>
@@ -83,7 +83,7 @@
         </header>
 
         <section id="view-tickets" class="module-view active">
-            <div id="stats-row" class="stats-row"></div>
+            <div id="stats-row" class="stats-row" aria-live="polite" aria-label="Resumen de tickets"></div>
 
             <div class="panel table-panel">
                 <div class="section-title">
@@ -93,12 +93,12 @@
                     </div>
                     <div class="support-search">
                         <label class="sr-only" for="ticket-search">Buscar tickets</label>
-                        <input id="ticket-search" type="search" placeholder="Buscar por numero, area o quien reporto">
+                        <input id="ticket-search" type="search" placeholder="Buscar por caso, area o persona" autocomplete="off">
                     </div>
                 </div>
 
                 <div class="table-wrap">
-                    <table>
+                    <table aria-label="Listado de tickets">
                         <thead id="tickets-head"></thead>
                         <tbody id="tickets-body">
                             <tr>
@@ -119,11 +119,6 @@
                             <h2 id="form-title">Crear ticket</h2>
                             <p class="muted">Completa la informacion del caso para enviarlo a la mesa de ayuda.</p>
                         </div>
-                    </div>
-                    <div class="module-note-grid" aria-label="Pasos para crear un caso">
-                        <span><strong>1</strong> Identifica quien reporta</span>
-                        <span><strong>2</strong> Selecciona area y tipo</span>
-                        <span><strong>3</strong> Describe el caso</span>
                     </div>
                     <form id="ticket-form">
                         <input type="hidden" id="ticket-id">
@@ -163,14 +158,14 @@
                             </div>
 
                             <label for="descripcion">Descripcion del caso</label>
-                            <textarea id="descripcion" name="descripcion" rows="4" maxlength="4000" placeholder="Resume que ocurre, desde cuando pasa y que necesita el usuario." required></textarea>
+                            <textarea id="descripcion" name="descripcion" rows="5" maxlength="4000" placeholder="Describe que ocurre, desde cuando sucede y que necesita la persona." required></textarea>
 
                             <label class="check-row" for="ticket-consent">
                                 <input id="ticket-consent" name="ticket_consent" type="checkbox" required>
                                 <span>Confirmo que registre solo datos necesarios para atender este caso.</span>
                             </label>
 
-                            <div class="actions">
+                            <div class="actions" aria-live="polite">
                                 <button id="submit-button" class="button primary" type="submit">Crear ticket</button>
                                 <button id="cancel-edit-button" class="button secondary hidden" type="button">Cancelar</button>
                             </div>
@@ -201,7 +196,7 @@
                     <div class="toolbar-actions">
                         <div class="report-search">
                             <label class="sr-only" for="report-search">Buscar reportes</label>
-                            <input id="report-search" type="search" placeholder="Buscar por numero, area o quien reporto">
+                            <input id="report-search" type="search" placeholder="Buscar por caso, area o persona" autocomplete="off">
                         </div>
                         <button id="export-excel-button" class="button secondary" type="button">Exportar Excel</button>
                         <button id="export-pdf-button" class="button primary" type="button">Exportar PDF</button>
@@ -209,7 +204,7 @@
                 </div>
                 <div id="reports-summary" class="reports-summary" aria-label="Resumen de reportes"></div>
                 <div class="table-wrap">
-                    <table class="reports-table">
+                    <table class="reports-table" aria-label="Reportes de tickets">
                         <thead>
                             <tr>
                                 <th>Numero de caso</th>
@@ -267,7 +262,7 @@
                         <button id="reload-users-button" class="button secondary" type="button">Actualizar usuarios</button>
                     </div>
                     <div class="table-wrap">
-                        <table>
+                        <table aria-label="Directorio de usuarios">
                             <thead>
                                 <tr>
                                     <th>Usuario</th>

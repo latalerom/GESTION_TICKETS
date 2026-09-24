@@ -66,6 +66,13 @@ const api = {
         return this.request("/users");
     },
 
+    setUserAccess(id, activo) {
+        return this.request(`/users/${id}/access`, {
+            method: "PATCH",
+            body: JSON.stringify({ activo }),
+        });
+    },
+
     resetUserPassword(id) {
         return this.request(`/users/${id}/reset-password`, {
             method: "POST",

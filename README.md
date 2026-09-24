@@ -182,6 +182,7 @@ La API se expone bajo el prefijo `/api`.
 | `POST` | `/api/logout` | Cierra sesion. |
 | `PUT` | `/api/profile` | Actualiza datos del perfil autenticado. |
 | `GET` | `/api/users` | Lista usuarios registrados. Solo admin. |
+| `PATCH` | `/api/users/<id>/access` | Revoca o reactiva el acceso de un usuario. Solo admin. |
 | `POST` | `/api/users/<id>/reset-password` | Restablece la contrasena de un usuario activo. Solo admin. |
 | `POST` | `/api/invitations` | Crea una invitacion de usuario. Solo admin. |
 | `GET` | `/api/invitations/<token>` | Consulta una invitacion valida. |

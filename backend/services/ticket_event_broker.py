@@ -33,16 +33,20 @@ class TicketEventBroker:
         for listener in listeners:
             listener.put(event)
 
-    def stream(self, listener, user):
+    def stream(self, listener, user, is_authorized=None):
         try:
             yield self.format_event("connected", {"message": "Conectado a acciones en tiempo real"})
 
             while True:
                 try:
                     event = listener.get(timeout=20)
+                    if is_authorized is not None and not is_authorized():
+                        break
                     if self.should_deliver(event, user):
                         yield self.format_event(event["event"], event["data"])
                 except Empty:
+                    if is_authorized is not None and not is_authorized():
+                        break
                     yield ": keep-alive\n\n"
         finally:
             self.unsubscribe(listener)
